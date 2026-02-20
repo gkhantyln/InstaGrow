@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="instagrow.png" alt="InstaGrow Logo" width="300" />
+  <img src="instagrow.png" alt="InstaGrow Logo"/>
   
   # InstaGrow - All-in-One Instagram Otomasyon Aracı 🚀
   

@@ -5,7 +5,7 @@
   
   **Instagram'da organik etkileşim ve güvenli takipçi yönetimi için tasarlanmış en kapsamlı, yeni nesil ve anti-ban korumalı Chrome Eklentisi.**
   
-  [![Version](https://img.shields.io/badge/Versiyon-v2.0-831843?style=for-the-badge)](https://github.com/gkhantyln)
+  [![Version](https://img.shields.io/badge/Versiyon-v1.0-831843?style=for-the-badge)](https://github.com/gkhantyln)
   [![Platform](https://img.shields.io/badge/Platform-Google%20Chrome-blue?style=for-the-badge&logo=googlechrome)](https://google.com/chrome)
 </div>
 

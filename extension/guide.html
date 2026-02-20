@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InstaGrow - Kullanıcı Rehberi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #bc1888;
+            --gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo-container {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--card-bg);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            font-size: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+            color: var(--text-main);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: var(--bg-color);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .feature-card h3 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-list {
+            list-style: none;
+            padding: 0;
+            counter-reset: step-counter;
+        }
+
+        .step-list li {
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 20px;
+        }
+
+        .step-list li::before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--gradient);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .badge-premium { background-color: #fef08a; color: #854d0e; }
+        .badge-danger { background-color: #fee2e2; color: #991b1b; }
+        .badge-success { background-color: #d1fae5; color: #065f46; }
+
+        .note {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            color: #1e3a8a;
+        }
+
+        .warning {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            color: #92400e;
+        }
+		
+		ul.bullet-list {
+			padding-left: 20px;
+		}
+
+		ul.bullet-list li {
+			margin-bottom: 10px;
+		}
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <h1>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="url(#ig-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <defs>
+                            <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#f09433" />
+                                <stop offset="25%" stop-color="#e6683c" />
+                                <stop offset="50%" stop-color="#dc2743" />
+                                <stop offset="75%" stop-color="#cc2366" />
+                                <stop offset="100%" stop-color="#bc1888" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                    </svg>
+                    InstaGrow 
+                </h1>
+            </div>
+            <div class="subtitle">Eklenti Kullanım Klavuzu ve Özellik Tanıtımı</div>
+        </header>
+
+        <div class="note">
+            <strong>👋 Hoş Geldiniz!</strong> InstaGrow, Instagram üzerinde etkileşimlerinizi (Takip, Takipten Çıkarma vb.) güvenli limitler dahilinde otomatikleştirmenizi sağlayan akıllı bir Chrome eklentisidir.
+        </div>
+
+        <div class="section">
+            <h2>⚙️ Nasıl Çalışır? (Temel 2 Adım)</h2>
+            <p>Eklenti her zaman iki aşamalı bir mantıkla çalışır. Önce veri toplanır, sonra bu verilere göre işlem yapılır.</p>
+            <ol class="step-list">
+                <li>
+                    <strong>Hedefleri Tara:</strong> Belirlediğiniz ayarlara (filtreler, beyaz/kara liste vb.) göre işlemi uygulayacağınız sayfanın (birinin profili veya gönderisi) verisini çeker. Kriterlerinize uymayanları (örn. gizli profiller) ayıklar.
+                </li>
+                <li>
+                    <strong>İşlemi Başlat:</strong> Tarama bittikten sonra "İşlemi Başlat" butonu aktif olur. Bu aşamada arka planda tek tek, belirttiğiniz bekleme süresine uyarak işlem yapılır ve belirlediğiniz otomasyonlar (AutoLike vb.) gerçekleştirilir.
+                </li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>🎯 İşlem Türleri</h2>
+            <p>Eklenti ile yapabileceğiniz ana işlemler şunlardır:</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>👥 Profil Sayfası İşlemleri</h3>
+                    <ul class="bullet-list">
+                        <li><strong>Takipçilerini Takip Et:</strong> Girdiğiniz kullanıcının takipçi listesini tarayarak onlara takip isteği gönderir.</li>
+                        <li><strong>Takip Ettiklerini Takip Et:</strong> Girdiğiniz kullanıcının takip ettiği (following) listesini tarar.</li>
+                        <li><strong>Geri Takip Etmeyenleri Çıkar (Unfollow):</strong> <span class="badge badge-danger">Önemli</span> Sizi takip etmeyen kullanıcıları ayıklar ve sizi takipten çıkarır. (Bu işlem için kendi profilinizde olmanız veya başka bir hesapta kullanılacaksa dikkatli olmanız tavsiye olunur)</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>📸 Gönderi (Post/Reels) İşlemleri</h3>
+                    <ul class="bullet-list">
+                        <li><strong>Beğenenleri Takip Et:</strong> Açık olan gönderiyi beğenen kullanıcıları hedefler. Aktif kitleye ulaşmak için idealdir.</li>
+                        <li><strong>Yorum Yapanları Takip Et:</strong> Açık olan gönderiye yorum yapan kişileri hedefler. Nişinizdeki en aktif kitleyi bulmanızı sağlar.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🛡️ Güvenlik & Limit Ayarları</h2>
+            <p>Instagram'ın algoritmaları ani ve otomatik işlemleri hızla tespit eder. Hesabınızın spama düşmemesi veya kapanmaması için bu ayarları dikkatli kullanın.</p>
+            
+            <div class="feature-card" style="margin-bottom: 15px;">
+                <h3>⏱️ İşlem Arası Süre (Sn)</h3>
+                <p>Her bir takip veya unfollow isteği arasına sistemin koyacağı <strong>rastgele</strong> bekleme süresidir. "Minimum (Örn: 5)" ve "Maksimum (Örn: 10)" saniye olarak belirlenir. Bu, sizin insan gibi davrandığınızı simüle eder.</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>📊 Günlük Maksimum İşlem</h3>
+                <p>Eklentinin bir oturumda yapacağı maksimum işlem (tıklama) sayısıdır. Örneğin 100 yazarsanız, 100 kişiyi takip ettikten sonra/takipten çıkardıktan sonra eklenti durur.</p>
+            </div>
+
+            <div class="warning">
+                <strong>Dikkat:</strong> Yeni (ısınmamış) hesaplarda süreleri çok uzun (örn. 30-60 saniye) ve limiti çok düşük (örn. 30-50 işlem) tutmanız tavsiye edilir. Eski hesaplar günde 150-200 işleme kadar çıkabilir, sınırları zorlamayın.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🚀 Gelişmiş Filtreler & Otomasyon</h2>
+            <p>Bu bölüm, eklentinin en can alıcı noktasıdır. Boşuna kota harcamamanız ve dikkat çekmeniz için tasarlanmış özel filtreler sunar.</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Gizli Profilleri Atla <span class="badge badge-success">Verimlilik</span></h3>
+                    <p>Tarama yapılırken hesabı 'Gizli' (Private) olan kişileri pas geçer. Böylece attığınız takip isteğinin havada "İstek Gönderildi" olarak beklemesini engeller, sadece Açık profillere odaklanırsınız.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Profil Fotosuzları Atla <span class="badge badge-success">Kalite</span></h3>
+                    <p>Instagram'ın varsayılan boş avatarına sahip, bot profil veya sahte (pasif) olma ihtimali yüksek kişileri listeden atar.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Otomatik Beğeni (Auto-Like) <span class="badge badge-premium">Premium Etkileşim</span></h3>
+                    <p>Bir kişiyi takip etmeden saliseler önce, <strong>son paylaştığı ilk 2 gönderiyi</strong> beğenir. Karşı taraf bildirimlerinde önce beğenileri, sonra sizi gördüğü için profile girip size dönüş yapma (Geri Takip) oranı inanılmaz derecede artar.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Story (Hikaye) İzle <span class="badge badge-premium">Görünürlük</span></h3>
+                    <p>Takip isteğinden hemen önce kullanıcının aktif bir hikayesi (Reels/Story) varsa, bunu açıp <strong>"görüldü"</strong> atar. Hikaye izleyenler listesinde organik olarak belirmenizi sağlar.</p>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 10px; color: var(--primary);">📋 Dinamik Listeler</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Beyaz Liste (Korunanlar / Whitelist)</h3>
+                    <p>Virgülle ayırarak yazdığınız kullanıcı adları (örn: <em>kullanici1, sirket2</em>), <strong>Takipten Çıkarma (Unfollow)</strong> işlemleri sırasında asla listeden çıkarılmazlar. Özellikle sevdiğiniz markaları veya ünlü hesapları korumak için idealdir.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Kara Liste (Pas geçilenler / Blacklist)</h3>
+                    <p>Yine virgülle ayırarak yazdığınız kişiler, <strong>Takip Etme</strong> işlemlerinde hedef klasöre dahi düşmez. Rakip firmaları veya botlarını takip etmemek için buraya adlarını girebilirsiniz.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💾 İşlem Geçmişi (Logs) ve Dışa Aktarma</h2>
+            <p>Eklentinin en alt barında, yapılan her işlemi görebileceğiniz "İşlem Kayıtları" kutusu bulunur. Başarılı/Başarısız tüm adımlar, zaman damgasıyla buraya düşer.</p>
+            <p>Ek olarak raporlama yapabilmeniz ve saklayabilmeniz için;</p>
+            
+            <ul class="bullet-list">
+                <li><strong>İndir (CSV):</strong> O anki işlem geçmişinizi Excel ile kolayca açılıp düzenlenebilecek şekilde (Kullanıcı adı, ID, Tarih ve İşlem durumu olarak) indirir.</li>
+                <li><strong>İndir (TXT):</strong> Aynı listeyi daha karmaşık ortamlarda kopyalayıp yapıştırmak veya basit not defterinde okumak için txt dosyası olarak kaydeder.</li>
+                <li><strong>Geçmişi Sil:</strong> Uzun süre eklentiyi kullandıktan sonra yerelde (tarayıcı belleği) şişmemesi veya verileri sıfırlamak istemeniz halinde tüm hafızayı boşaltır.</li>
+            </ul>
+        </div>
+
+    </div>
+
+</body>
+</html>

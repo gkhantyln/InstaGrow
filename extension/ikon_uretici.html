@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>InstaGrow - İkon Oluşturucu</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #bc1888;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #d21c97;
+        }
+
+        canvas {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>InstaGrow PNG İkon Oluşturucu</h2>
+    <p>Manifest.json için gerekli olan PNG formatındaki ikonları (16x16, 48x48, 128x128) logodan otomatik üretmek için
+        aşağıdaki butona tıklayın.</p>
+    <button id="downloadBtn">İkonları İndir (PNG)</button>
+    <p style="font-size: 13px; color: #4b5563; margin-top: 20px;">İnen dosyaları (icon16.png, icon48.png, icon128.png)
+        lütfen <b>extension</b> klasörüne taşıyın.</p>
+
+    <canvas id="c16" width="16" height="16"></canvas>
+    <canvas id="c48" width="48" height="48"></canvas>
+    <canvas id="c128" width="128" height="128"></canvas>
+
+    <script>
+        const svgString = `
+      <svg width="128" height="128" viewBox="0 0 24 24" fill="none" stroke="url(#ig-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#f09433" />
+            <stop offset="25%" stop-color="#e6683c" />
+            <stop offset="50%" stop-color="#dc2743" />
+            <stop offset="75%" stop-color="#cc2366" />
+            <stop offset="100%" stop-color="#bc1888" />
+          </linearGradient>
+        </defs>
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+      </svg>
+    `;
+
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgString);
+            const img = new Image();
+            img.onload = () => {
+                [16, 48, 128].forEach(size => {
+                    const canvas = document.getElementById('c' + size);
+                    const ctx = canvas.getContext('2d');
+
+                    // Clear canvas and draw a slightly rounded background for better visibility if desired, 
+                    // but we'll stick to transparent background with SVG drawing for clean icons.
+                    ctx.clearRect(0, 0, size, size);
+                    ctx.drawImage(img, 0, 0, size, size);
+
+                    const a = document.createElement('a');
+                    a.download = 'icon' + size + '.png';
+                    a.href = canvas.toDataURL('image/png');
+                    a.click();
+                });
+                document.getElementById('downloadBtn').textContent = "Başarıyla İndirildi! ✅";
+                document.getElementById('downloadBtn').style.backgroundColor = "#10b981";
+            };
+            img.src = url;
+        });
+    </script>
+</body>
+
+</html>

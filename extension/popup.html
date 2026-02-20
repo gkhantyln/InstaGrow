@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <title>InstaGrow</title>
+  <link rel="stylesheet" href="popup.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#ig-grad)" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <defs>
+            <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#f09433" />
+              <stop offset="25%" stop-color="#e6683c" />
+              <stop offset="50%" stop-color="#dc2743" />
+              <stop offset="75%" stop-color="#cc2366" />
+              <stop offset="100%" stop-color="#bc1888" />
+            </linearGradient>
+          </defs>
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+          <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+        <h1 style="display: flex; align-items: center;">InstaGrow <span class="version-badge">v1.0</span></h1>
+      </div>
+      <div class="status-indicator">
+        <div id="statusDot" class="dot"></div>
+        <span id="statusText">Hazır</span>
+      </div>
+    </header>
+
+    <main>
+      <div class="stats-panel">
+        <div class="stat-box">
+          <span class="stat-value" id="scannedCount" style="color: #3b82f6;">0</span>
+          <span class="stat-label">Bulunan</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-value" id="actionCount" style="color: var(--success);">0</span>
+          <span class="stat-label">İşlenen</span>
+        </div>
+      </div>
+
+      <div class="action-selector">
+        <label for="actionType">Yapılacak İşlem</label>
+        <select id="actionType" class="modern-select">
+          <optgroup label="Profil Sayfası İşlemleri">
+            <option value="follow_followers">Bu Kişinin 'Takipçilerini' Takip Et</option>
+            <option value="follow_following">Bu Kişinin 'Takip Ettiklerini' Takip Et</option>
+            <option value="unfollow_nonfollowers">Geri Takip Etmeyenleri Çıkar (Unfollow)</option>
+          </optgroup>
+          <optgroup label="Gönderi (Post/Reels) İşlemleri">
+            <option value="follow_likers">Bu Gönderiyi 'Beğenenleri' Takip Et</option>
+            <option value="follow_commenters">Bu Gönderiye 'Yorum Yapanları' Takip Et</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="controls-group">
+        <button id="startScanBtn" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Hedefleri Tara
+        </button>
+        <button id="startActionBtn" class="btn btn-success" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="8.5" cy="7" r="4"></circle>
+            <polyline points="17 11 19 13 23 9"></polyline>
+          </svg>
+          İşlemi Başlat
+        </button>
+        <button id="stopBtn" class="btn btn-danger" style="display: none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+          </svg>
+          İşlemi Durdur
+        </button>
+      </div>
+
+      <div class="header-tools"
+        style="display: flex; justify-content: space-between; margin-top: 15px; margin-bottom: 5px;">
+        <button id="exportLogsBtn" class="btn btn-primary" style="font-size: 11px; padding: 6px 4px; width: 32%;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            style="margin-right: 2px;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          İndir (CSV)
+        </button>
+        <button id="exportTxtBtn" class="btn btn-primary" style="font-size: 11px; padding: 6px 4px; width: 32%;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            style="margin-right: 2px;">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16h16V8l-6-6z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          İndir (TXT)
+        </button>
+        <button id="clearLogsBtn" class="btn btn-danger" style="font-size: 11px; padding: 6px 4px; width: 32%;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            style="margin-right: 2px;">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Geçmişi Sil
+        </button>
+      </div>
+
+      <div class="settings-section accordion-section" id="section-limits">
+        <div class="accordion-header">
+          <h3>Güvenlik & Limit Ayarları</h3>
+          <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+          <div class="setting-row">
+            <label>İşlem Arası Süre (Sn)</label>
+            <div class="range-inputs">
+              <input type="number" id="minDelay" value="5" min="2" max="20" title="Minimum saniye">
+              <span style="color: var(--text-muted);">-</span>
+              <input type="number" id="maxDelay" value="10" min="5" max="60" title="Maksimum saniye">
+            </div>
+          </div>
+          <div class="setting-row">
+            <label>Günlük Maksimum İşlem</label>
+            <input type="number" id="dailyLimit" value="100" min="10" max="500" style="width: 55px;">
+          </div>
+          <div class="setting-row">
+            <span
+              style="font-size: 10px; color: #8b92a5; line-height: 1.4; width:100%; text-align:center; padding-top:4px;">
+              Yüksek limitler ve kısa süreler hesabınızın kısıtlanmasına yol açabilir.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section premium-section accordion-section collapsed" id="section-premium"
+        style="margin-top: 10px;">
+        <div class="accordion-header">
+          <h3>Gelişmiş Filtreler & Otomasyon 🚀</h3>
+          <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+          <div class="setting-row checkbox-row">
+            <label for="skipPrivate">Gizli Profilleri Atla</label>
+            <input type="checkbox" id="skipPrivate">
+          </div>
+          <div class="setting-row checkbox-row">
+            <label for="skipNoPic">Profil Fotoğrafı Olmayanları Atla</label>
+            <input type="checkbox" id="skipNoPic">
+          </div>
+
+          <hr class="premium-divider">
+
+          <div class="setting-row checkbox-row">
+            <label for="autoLike">Otomatik Beğeni (Son 2 Gönderi)</label>
+            <input type="checkbox" id="autoLike">
+          </div>
+          <div class="setting-row checkbox-row">
+            <label for="autoStory">Story (Hikaye) İzle</label>
+            <input type="checkbox" id="autoStory">
+          </div>
+
+          <hr class="premium-divider">
+
+          <div class="list-inputs">
+            <div class="list-col">
+              <label>Beyaz Liste (Korunanlar)</label>
+              <textarea id="whitelist" placeholder="kullanici1, kullanici2..." rows="2"></textarea>
+            </div>
+            <div class="list-col">
+              <label>Kara Liste (Pas geçilenler)</label>
+              <textarea id="blacklist" placeholder="kullanici3, kullanici4..." rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section accordion-section" id="section-logs" style="margin-top: 10px; padding: 0;">
+        <div class="accordion-header" style="padding: 12px; margin-bottom: 0;">
+          <h3 style="margin-bottom: 0;">İşlem Kayıtları (Log)</h3>
+          <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content" style="padding: 0 12px 12px 12px;">
+          <div id="logContainer" class="log-container">
+            <!-- Logs -->
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer class="footer">
+      <div class="footer-icons">
+        <a href="https://www.instagram.com/ayzvisionstudio/" target="_blank" title="Instagram">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+        </a>
+        <a href="https://www.linkedin.com/in/gkhantyln/" target="_blank" title="LinkedIn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+            <rect x="2" y="9" width="4" height="12"></rect>
+            <circle cx="4" cy="4" r="2"></circle>
+          </svg>
+        </a>
+        <a href="mailto:tylngkhn@gmail.com" title="E-Posta">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+        </a>
+        <a href="https://t.me/llcoder" target="_blank" title="Telegram">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </a>
+        <a href="https://github.com/gkhantyln" target="_blank" title="GitHub">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+            </path>
+          </svg>
+        </a>
+      </div>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+
+</html>

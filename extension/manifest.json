@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "InstaGrow - Safe All in One Tool",
+  "version": "1.0.0",
+  "description": "A modern, rate-limited Chrome Extension to safely All in One Tool Instagram users.",
+  "permissions": [
+    "storage",
+    "alarms",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.instagram.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "InstaCleaner",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.instagram.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

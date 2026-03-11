@@ -187,6 +187,12 @@ body {
   color: white;
 }
 
+.btn.btn-sm {
+  padding: 8px 12px;
+  font-size: 12px;
+  gap: 6px;
+}
+
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -438,4 +444,44 @@ input[type="number"]:focus {
 .footer-icons a:hover {
   color: var(--accent);
   transform: translateY(-2px);
+}
+
+
+/* Spin Animation for Hash Refresh */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.log-warn {
+  color: #f59e0b;
+}
+
+
+/* Tools Section */
+.tools-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.tools-row {
+  display: flex;
+  gap: 8px;
+}
+
+.tools-row .btn {
+  flex: 1;
+  width: auto;
+}
+
+.tools-row .btn-sm {
+  padding: 8px 10px;
+  font-size: 11px;
 }

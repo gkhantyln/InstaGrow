@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportLogsBtn = document.getElementById('exportLogsBtn');
   const exportTxtBtn = document.getElementById('exportTxtBtn');
   const clearLogsBtn = document.getElementById('clearLogsBtn');
+  const refreshHashBtn = document.getElementById('refreshHashBtn');
 
   const minDelay = document.getElementById('minDelay');
   const maxDelay = document.getElementById('maxDelay');
@@ -201,6 +202,43 @@ document.addEventListener('DOMContentLoaded', () => {
   stopBtn.addEventListener('click', () => {
     sendCommandToContentScripts('STOP');
   });
+
+  // Hash Güncelleme Butonu
+  if (refreshHashBtn) {
+    refreshHashBtn.addEventListener('click', async () => {
+      refreshHashBtn.disabled = true;
+      const originalText = refreshHashBtn.innerHTML;
+      refreshHashBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 2px; animation: spin 1s linear infinite;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36M20.49 15a9 9 0 0 1-14.85 3.36"></path></svg>Güncelleniyor...';
+      
+      try {
+        // Content script'e hash güncelleme komutu gönder
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+          if (!tabs[0]) {
+            appendLog('Aktif sekme bulunamadı.', 'error');
+            refreshHashBtn.disabled = false;
+            refreshHashBtn.innerHTML = originalText;
+            return;
+          }
+          
+          chrome.tabs.sendMessage(tabs[0].id, { action: 'REFRESH_HASHES' }, (response) => {
+            if (chrome.runtime.lastError) {
+              appendLog('Content script\'e bağlanılamadı. Sayfayı yenileyip tekrar deneyin.', 'error');
+            } else if (response && response.success) {
+              appendLog('Query hash\'leri başarıyla güncellendi!', 'success');
+            } else {
+              appendLog('Hash güncelleme başarısız. Fallback hash\'ler kullanılıyor.', 'warn');
+            }
+            refreshHashBtn.disabled = false;
+            refreshHashBtn.innerHTML = originalText;
+          });
+        });
+      } catch (e) {
+        appendLog(`Hash güncelleme hatası: ${e.message}`, 'error');
+        refreshHashBtn.disabled = false;
+        refreshHashBtn.innerHTML = originalText;
+      }
+    });
+  }
 
   // Export & Clear Logs Buttons
   if (exportLogsBtn) {

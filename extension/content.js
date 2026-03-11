@@ -2,6 +2,157 @@ let isRunning = false;
 let appState = { status: 'idle', scanned: 0, unfollowed: 0 };
 let nonFollowers = []; // List of user IDs
 
+// Query Hash Cache
+let queryHashCache = {
+    follow_following: null,
+    follow_followers: null,
+    follow_commenters: null,
+    lastUpdated: null
+};
+
+// Dinamik Query Hash Çekme Sistemi
+async function extractQueryHashesFromInstagram() {
+    try {
+        log('Query hash\'leri Instagram\'dan çekiliyor...', 'info');
+
+        // Timeout ile fetch
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 saniye timeout
+
+        const res = await fetch('https://www.instagram.com/', {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            },
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!res.ok) throw new Error('Instagram sayfası yüklenemedi');
+
+        let html = await res.text();
+
+        // HTML'de tüm hash'leri ara
+        const allHashMatches = html.match(/"queryId":"([a-f0-9]{32})"/g) || [];
+        const uniqueHashes = [...new Set(allHashMatches.map(h => h.match(/"queryId":"([a-f0-9]{32})"/)[1]))];
+
+        log(`HTML'de ${uniqueHashes.length} benzersiz hash bulundu`, 'info');
+
+        const hashes = {};
+
+        // Bilinen operationName'leri ara
+        const operationPatterns = [
+            { name: 'follow_following', patterns: ['FollowingList', 'Following', 'edge_follow'] },
+            { name: 'follow_followers', patterns: ['FollowersList', 'Followers', 'edge_followed_by'] },
+            { name: 'follow_commenters', patterns: ['MediaToComments', 'Comments', 'edge_media_to_comment'] }
+        ];
+
+        for (const op of operationPatterns) {
+            for (const pattern of op.patterns) {
+                const regex = new RegExp(`"queryId":"([a-f0-9]{32})"[^}]{0,200}${pattern}`, 'i');
+                const match = html.match(regex);
+                if (match && match[1]) {
+                    hashes[op.name] = match[1];
+                    log(`${op.name} hash bulundu: ${match[1]}`, 'info');
+                    break;
+                }
+            }
+        }
+
+        // Eğer hala hash'ler bulunamadıysa, ilk 3 hash'i kullan
+        if (Object.keys(hashes).length < 3 && uniqueHashes.length >= 3) {
+            if (!hashes.follow_following) hashes.follow_following = uniqueHashes[0];
+            if (!hashes.follow_followers) hashes.follow_followers = uniqueHashes[1];
+            if (!hashes.follow_commenters) hashes.follow_commenters = uniqueHashes[2];
+            log('İlk 3 hash kullanılıyor (otomatik seçim)', 'info');
+        }
+
+        // Fallback: Bilinen hash'ler
+        const fallbackHashes = {
+            follow_following: '58712303d941c6855d4e888c5f0cd22f',
+            follow_followers: '37479f2b8209594dde7facb0d904896a',
+            follow_commenters: '33ba35852cb50da46f5b5e889df7d159'
+        };
+
+        // Cache'e kaydet
+        queryHashCache = {
+            follow_following: hashes.follow_following || fallbackHashes.follow_following,
+            follow_followers: hashes.follow_followers || fallbackHashes.follow_followers,
+            follow_commenters: hashes.follow_commenters || fallbackHashes.follow_commenters,
+            lastUpdated: new Date().toISOString()
+        };
+
+        const foundCount = Object.values(hashes).filter(h => h).length;
+        if (foundCount > 0) {
+            log(`✓ Query hash'leri güncellendi: ${foundCount} yeni hash bulundu`, 'success');
+        } else {
+            log(`Yeni hash bulunamadı. Fallback hash\'ler kullanılıyor.`, 'warn');
+        }
+
+        // Cache'i storage'a kaydet
+        chrome.storage.local.set({ queryHashCache });
+
+        return queryHashCache;
+    } catch (e) {
+        if (e.name === 'AbortError') {
+            log(`Hash çekme zaman aşımına uğradı. Fallback hash\'ler kullanılıyor.`, 'warn');
+        } else {
+            log(`Hash çekme hatası: ${e.message}. Fallback hash\'ler kullanılıyor.`, 'warn');
+        }
+
+        // Fallback hash'ler
+        queryHashCache = {
+            follow_following: '58712303d941c6855d4e888c5f0cd22f',
+            follow_followers: '37479f2b8209594dde7facb0d904896a',
+            follow_commenters: '33ba35852cb50da46f5b5e889df7d159',
+            lastUpdated: new Date().toISOString()
+        };
+
+        chrome.storage.local.set({ queryHashCache });
+        return queryHashCache;
+    }
+}
+
+// Program başladığında hash'leri yükle
+async function initializeQueryHashes() {
+    try {
+        // Önce storage'dan cache'i kontrol et
+        chrome.storage.local.get(['queryHashCache'], async (data) => {
+            if (data.queryHashCache && data.queryHashCache.lastUpdated) {
+                const lastUpdate = new Date(data.queryHashCache.lastUpdated);
+                const now = new Date();
+                const hoursDiff = (now - lastUpdate) / (1000 * 60 * 60);
+                
+                // 24 saatten eski ise yenile
+                if (hoursDiff < 24) {
+                    queryHashCache = data.queryHashCache;
+                    log('Query hash\'leri cache\'den yüklendi', 'info');
+                    return;
+                }
+            }
+            
+            // Cache eski veya yok ise yeni çek (timeout ile)
+            const timeoutPromise = new Promise((resolve) => {
+                setTimeout(() => {
+                    log('Hash çekme zaman aşımına uğradı. Fallback hash\'ler kullanılıyor.', 'warn');
+                    resolve(false);
+                }, 5000); // 5 saniye timeout
+            });
+            
+            const hashPromise = extractQueryHashesFromInstagram();
+            
+            Promise.race([hashPromise, timeoutPromise]).catch(e => {
+                log(`Hash başlatma hatası: ${e.message}`, 'error');
+            });
+        });
+    } catch (e) {
+        log(`Hash başlatma hatası: ${e.message}`, 'error');
+    }
+}
+
+// Content script yüklendiğinde hash'leri başlat
+initializeQueryHashes();
+
 function updateState(newState) {
     appState = { ...appState, ...newState };
     chrome.runtime.sendMessage({ type: 'SAVE_STATE', state: appState });
@@ -94,11 +245,11 @@ async function scanTargetUsers(actionType, settings = {}) {
         let varsObj = {};
 
         if (actionType === 'follow_following' || actionType === 'unfollow_nonfollowers') {
-            queryHash = '58712303d941c6855d4e888c5f0cd22f';
+            queryHash = queryHashCache.follow_following || '58712303d941c6855d4e888c5f0cd22f';
             edgePath = 'edge_follow';
             varsObj = { id: targetUserId, first: 50 };
         } else if (actionType === 'follow_followers') {
-            queryHash = '37479f2b8209594dde7facb0d904896a';
+            queryHash = queryHashCache.follow_followers || '37479f2b8209594dde7facb0d904896a';
             edgePath = 'edge_followed_by';
             varsObj = { id: targetUserId, first: 50 };
         } else if (actionType === 'follow_likers') {
@@ -107,45 +258,66 @@ async function scanTargetUsers(actionType, settings = {}) {
                 throw new Error("Lütfen işlemi başlatmadan önce bir GÖNDERİ ekranına girin veya gönderiye tıklayın.");
             }
             const shortcode = shortcodeMatch[1];
-            log(`@${shortcode} beğeni ID'si çözümleniyor...`, 'info');
+            log(`Beğenenler çekiliyor (${shortcode})...`, 'info');
 
-            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
-            let mediaId = BigInt(0);
-            for (let i = 0; i < shortcode.length; i++) {
-                mediaId = (mediaId * BigInt(64)) + BigInt(alphabet.indexOf(shortcode[i]));
-            }
-
-            const url = `https://www.instagram.com/api/v1/media/${mediaId.toString(10)}/likers/`;
-            log(`Beğenenler çekiliyor...`, 'info');
-            const res = await fetch(url, {
-                headers: {
-                    'x-ig-app-id': '936619743392459',
-                    'x-csrftoken': getCsrfToken() || ''
+            // GraphQL ile beğenenler çek (daha güvenilir)
+            queryHash = '1cb6ec562411f7b1d4a2c4a6cdee6db5'; // Likers query hash
+            edgePath = 'edge_liked_by';
+            varsObj = { shortcode: shortcode, first: 50 };
+            
+            // Fallback: V1 API ile de dene
+            try {
+                const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+                let mediaId = BigInt(0);
+                for (let i = 0; i < shortcode.length; i++) {
+                    mediaId = (mediaId * BigInt(64)) + BigInt(alphabet.indexOf(shortcode[i]));
                 }
-            });
-            if (!res.ok) throw new Error(`HTTP Hatası: ${res.status}`);
-            const data = await res.json();
 
-            const whitelistArr = settings.whitelist ? settings.whitelist.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
-            const blacklistArr = settings.blacklist ? settings.blacklist.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
-
-            if (data.users && data.users.length > 0) {
-                // Apply filters for V1 API likers
-                data.users.forEach(u => {
-                    const username = u.username || 'unknown';
-                    if (blacklistArr.includes(username.toLowerCase())) return;
-                    if (settings.skipPrivate && u.is_private) return;
-                    if (settings.skipNoPic && u.profile_pic_url && u.profile_pic_url.includes('default_v0')) return;
-
-                    nonFollowers.push({ id: u.pk || u.id, username: username });
+                const url = `https://www.instagram.com/api/v1/media/${mediaId.toString(10)}/likers/`;
+                const res = await fetch(url, {
+                    headers: {
+                        'x-ig-app-id': '936619743392459',
+                        'x-csrftoken': getCsrfToken() || ''
+                    }
                 });
-                totalFetched += data.users.length;
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    const whitelistArr = settings.whitelist ? settings.whitelist.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+                    const blacklistArr = settings.blacklist ? settings.blacklist.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+
+                    if (data.users && data.users.length > 0) {
+                        data.users.forEach(u => {
+                            const username = u.username || 'unknown';
+                            const userId = u.pk || u.id;
+                            
+                            if (!userId) {
+                                log(`⚠️ @${username} için ID bulunamadı. Atlanıyor.`, 'warn');
+                                return;
+                            }
+                            
+                            if (blacklistArr.includes(username.toLowerCase())) return;
+                            if (settings.skipPrivate && u.is_private) return;
+                            if (settings.skipNoPic && u.profile_pic_url && u.profile_pic_url.includes('default_v0')) return;
+
+                            nonFollowers.push({ id: userId, username: username });
+                        });
+                        totalFetched += data.users.length;
+                    }
+                    updateState({ scanned: nonFollowers.length });
+                    hasNextPage = false;
+                    log(`V1 API'den ${data.users?.length || 0} beğenen çekildi`, 'success');
+                    return; // V1 API başarılı, GraphQL'e geçme
+                }
+            } catch (e) {
+                log(`V1 API hatası: ${e.message}. GraphQL deneniyor...`, 'info');
             }
-            updateState({ scanned: nonFollowers.length });
-            hasNextPage = false; // V1 API for likers returns a raw list without typical graphql pagination in this context
+            
+            // GraphQL'e devam et
+            hasNextPage = true;
 
         } else if (actionType === 'follow_commenters') {
-            queryHash = '33ba35852cb50da46f5b5e889df7d159'; // Commenters
+            queryHash = queryHashCache.follow_commenters || '33ba35852cb50da46f5b5e889df7d159'; // Commenters
             edgePath = 'edge_media_to_comment';
             const shortcodeMatch = window.location.pathname.match(/\/(?:p|reel|tv)\/([^\/]+)/);
             if (!shortcodeMatch) {
@@ -204,6 +376,13 @@ async function scanTargetUsers(actionType, settings = {}) {
                 // For comments, the actual profile is inside owner
                 const userNode = (actionType === 'follow_commenters') ? node.owner : node;
                 const username = userNode.username || 'unknown';
+                const userId = userNode.id || userNode.pk;
+
+                // Eğer ID bulunamadıysa, username'den ID çıkarmaya çalış
+                if (!userId) {
+                    log(`⚠️ @${username} için ID bulunamadı. Atlanıyor.`, 'warn');
+                    return;
+                }
 
                 // Blacklist check (For Follow actions)
                 if (actionType !== 'unfollow_nonfollowers' && blacklistArr.includes(username.toLowerCase())) return;
@@ -217,10 +396,10 @@ async function scanTargetUsers(actionType, settings = {}) {
 
                 if (actionType === 'unfollow_nonfollowers') {
                     if (userNode.follows_viewer === false || userNode.follows_viewer === undefined) {
-                        nonFollowers.push({ id: userNode.id, username: username });
+                        nonFollowers.push({ id: userId, username: username });
                     }
                 } else {
-                    nonFollowers.push({ id: userNode.id, username: username }); // Storing as object
+                    nonFollowers.push({ id: userId, username: username }); // Storing as object
                 }
             });
 
@@ -350,12 +529,18 @@ async function startAction(actionType, settings) {
             let endpoint = '';
             let actionName = '';
 
+            // ID kontrolü
+            if (!userId || userId === 'unknown') {
+                log(`⚠️ @${username} için geçerli ID bulunamadı. Atlanıyor.`, 'warn');
+                continue;
+            }
+
             // For DOM scraper fallback, userId might be a string username
             if (actionType === 'unfollow_nonfollowers') {
-                endpoint = `https://www.instagram.com/web/friendships/${userId}/unfollow/`;
+                endpoint = `https://www.instagram.com/api/v1/friendships/delete/${userId}/`;
                 actionName = 'Takipten Çıkarma';
             } else {
-                endpoint = `https://www.instagram.com/web/friendships/${userId}/follow/`;
+                endpoint = `https://www.instagram.com/api/v1/friendships/create/${userId}/`;
                 actionName = 'Takip Etme';
 
                 // --- PREMIUM FEATURES: Auto-Like & Auto-Story ---
@@ -368,26 +553,34 @@ async function startAction(actionType, settings) {
                 // ------------------------------------------------
             }
 
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'x-csrftoken': csrfToken,
-                    'content-type': 'application/x-www-form-urlencoded'
-                }
-            });
-
+            let res = null;
             let actionStatus = 'Başarısız';
-            if (!res.ok) {
-                log(`${actionName} başarısız: @${username} (HTTP ${res.status})`, 'error');
-                if (res.status === 429 || res.status === 400) {
-                    log(`Instagram kısıtlaması (Rate Limit) veya hatalı istek algılandı. İşlem durduruluyor.`, 'error');
-                    break;
+            
+            try {
+                // Doğru endpoint: /api/v1/friendships/create/ veya /delete/
+                res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'x-csrftoken': csrfToken,
+                        'x-ig-app-id': '936619743392459',
+                        'content-type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                if (res.ok) {
+                    actionStatus = 'Başarılı';
+                    processedToday++;
+                    log(`${actionName} başarılı: @${username} (${processedToday}/${settings.dailyLimit})`, 'success');
+                    updateState({ processed: appState.processed + 1 });
+                } else {
+                    log(`${actionName} başarısız: @${username} (ID: ${userId}, HTTP ${res.status})`, 'error');
+                    if (res.status === 429) {
+                        log(`Instagram kısıtlaması (Rate Limit) algılandı. İşlem durduruluyor.`, 'error');
+                        break;
+                    }
                 }
-            } else {
-                actionStatus = 'Başarılı';
-                processedToday++;
-                log(`${actionName} başarılı: @${username} (${processedToday}/${settings.dailyLimit})`, 'success');
-                updateState({ processed: appState.processed + 1 });
+            } catch (e) {
+                log(`${actionName} hatası: @${username} (${e.message})`, 'error');
             }
 
             // Save log to persistent storage for export
@@ -434,5 +627,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (request.action === 'STOP') {
         isRunning = false;
         log('İşlem durduruluyor...', 'info');
+    } else if (request.action === 'REFRESH_HASHES') {
+        extractQueryHashesFromInstagram().then(() => {
+            sendResponse({ success: true });
+        }).catch((e) => {
+            log(`Hash güncelleme hatası: ${e.message}`, 'error');
+            sendResponse({ success: false, error: e.message });
+        });
+        return true; // Async response için gerekli
     }
 });

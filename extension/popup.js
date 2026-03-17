@@ -127,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
       startScanBtn.style.display = 'flex';
       startActionBtn.style.display = 'flex';
       stopBtn.style.display = 'none';
+      stopBtn.disabled = false;
       actionTypeSelect.disabled = false;
 
       startActionBtn.disabled = !state.scanned || state.scanned === 0;
@@ -171,8 +172,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Action Buttons
   startScanBtn.addEventListener('click', () => {
+    const actionType = actionTypeSelect.value;
+    // Bu iki modda liste tam çekilmeden durdurma yapılamaz
+    if (actionType === 'unfollow_nonfollowers' || actionType === 'unfollow_followers' || actionType === 'unfollow_private') {
+      stopBtn.disabled = true;
+    }
     sendCommandToContentScripts('START_SCAN', {
-      actionType: actionTypeSelect.value,
+      actionType,
       settings: {
         skipPrivate: skipPrivate ? skipPrivate.checked : false,
         skipNoPic: skipNoPic ? skipNoPic.checked : false,
@@ -314,6 +320,15 @@ document.addEventListener('DOMContentLoaded', () => {
           alert("Geçmiş başarıyla temizlendi.");
         });
       }
+    });
+  }
+
+  const clearVisibleLogsBtn = document.getElementById('clearVisibleLogsBtn');
+  if (clearVisibleLogsBtn) {
+    clearVisibleLogsBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // accordion'un açılıp kapanmasını engelle
+      logContainer.innerHTML = '';
+      chrome.storage.local.set({ logs: [] });
     });
   }
 });

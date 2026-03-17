@@ -202,6 +202,48 @@ async function getTargetUserId(username) {
     }
 }
 
+async function fetchFollowList(userId, type, csrfToken, onProgress, ignoreStop = false) {
+    const users = [];
+    let nextMaxId = null;
+    const appId = '936619743392459';
+
+    do {
+        let url = `https://www.instagram.com/api/v1/friendships/${userId}/${type}/?count=200`;
+        if (nextMaxId) url += `&max_id=${nextMaxId}`;
+
+        const res = await fetch(url, {
+            headers: {
+                'x-ig-app-id': appId,
+                'x-csrftoken': csrfToken
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error(`Instagram API hatası (${type}): HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        const list = data.users || [];
+        list.forEach(u => users.push({
+            id: String(u.pk || u.id),
+            username: u.username,
+            is_private: u.is_private || false,
+            profile_pic_url: u.profile_pic_url || ''
+        }));
+        nextMaxId = data.next_max_id || null;
+
+        log(`${type} listesi çekiliyor... (${users.length} kişi)`, 'info');
+        if (onProgress) onProgress(users.length);
+
+        if (nextMaxId && (ignoreStop || isRunning)) {
+            await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
+        }
+    } while (nextMaxId && (ignoreStop || isRunning));
+
+    return users;
+}
+
+
 async function scanTargetUsers(actionType, settings = {}) {
     if (isRunning) return;
     isRunning = true;
@@ -213,6 +255,49 @@ async function scanTargetUsers(actionType, settings = {}) {
         const userId = getUserId();
         if (!userId) {
             throw new Error("Kullanıcı ID bulunamadı. Lütfen Instagram'a giriş yapın.");
+        }
+
+        const csrfToken = getCsrfToken() || '';
+
+        // --- UNFOLLOW NON-FOLLOWERS: V1 API ile following ve followers çek, farkı bul ---
+        if (actionType === 'unfollow_nonfollowers' || actionType === 'unfollow_followers' || actionType === 'unfollow_private') {
+            log('Takip ettikleriniz çekiliyor...', 'info');
+
+            const following = await fetchFollowList(userId, 'following', csrfToken, null, true);
+
+            // unfollow_private için followers listesine gerek yok
+            let followers = [];
+            if (actionType !== 'unfollow_private') {
+                log(`${following.length} takip edilen bulundu. Şimdi takipçiler çekiliyor...`, 'info');
+                followers = await fetchFollowList(userId, 'followers', csrfToken, null, true);
+                log(`${followers.length} takipçi bulundu. Liste hesaplanıyor...`, 'info');
+            } else {
+                log(`${following.length} takip edilen bulundu. Gizli hesaplar filtreleniyor...`, 'info');
+            }
+
+            const followerIds = new Set(followers.map(u => String(u.id)));
+            const whitelistArr = settings.whitelist ? settings.whitelist.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+            const blacklistArr = settings.blacklist ? settings.blacklist.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+
+            following.forEach(u => {
+                const isFollowingBack = followerIds.has(String(u.id));
+
+                if (actionType === 'unfollow_nonfollowers' && isFollowingBack) return;
+                if (actionType === 'unfollow_followers' && !isFollowingBack) return;
+                if (actionType === 'unfollow_private' && !u.is_private) return; // Gizli değilse atla
+
+                if (whitelistArr.includes(u.username.toLowerCase())) return;
+                if (blacklistArr.includes(u.username.toLowerCase())) return;
+                nonFollowers.push(u);
+                updateState({ scanned: nonFollowers.length });
+            });
+
+            updateState({ scanned: nonFollowers.length });
+            const stoppedNote = '';
+            log(`Tarama tamamlandı. ${nonFollowers.length} kişi listelendi${stoppedNote}.`, 'success');
+            isRunning = false;
+            updateState({ status: 'idle' });
+            return;
         }
 
         let targetUserId = userId;
@@ -244,7 +329,7 @@ async function scanTargetUsers(actionType, settings = {}) {
         let edgePath = '';
         let varsObj = {};
 
-        if (actionType === 'follow_following' || actionType === 'unfollow_nonfollowers') {
+        if (actionType === 'follow_following') {
             queryHash = queryHashCache.follow_following || '58712303d941c6855d4e888c5f0cd22f';
             edgePath = 'edge_follow';
             varsObj = { id: targetUserId, first: 50 };
@@ -394,13 +479,7 @@ async function scanTargetUsers(actionType, settings = {}) {
                 if (settings.skipPrivate && userNode.is_private) return;
                 if (settings.skipNoPic && userNode.profile_pic_url && userNode.profile_pic_url.includes('default_v0')) return;
 
-                if (actionType === 'unfollow_nonfollowers') {
-                    if (userNode.follows_viewer === false || userNode.follows_viewer === undefined) {
-                        nonFollowers.push({ id: userId, username: username });
-                    }
-                } else {
-                    nonFollowers.push({ id: userId, username: username }); // Storing as object
-                }
+                nonFollowers.push({ id: userId, username: username });
             });
 
             updateState({ scanned: nonFollowers.length });
@@ -536,8 +615,8 @@ async function startAction(actionType, settings) {
             }
 
             // For DOM scraper fallback, userId might be a string username
-            if (actionType === 'unfollow_nonfollowers') {
-                endpoint = `https://www.instagram.com/api/v1/friendships/delete/${userId}/`;
+            if (actionType === 'unfollow_nonfollowers' || actionType === 'unfollow_followers' || actionType === 'unfollow_private') {
+                endpoint = `https://www.instagram.com/api/v1/friendships/destroy/${userId}/`;
                 actionName = 'Takipten Çıkarma';
             } else {
                 endpoint = `https://www.instagram.com/api/v1/friendships/create/${userId}/`;

@@ -26,7 +26,7 @@
           <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
           <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
         </svg>
-        <h1 style="display: flex; align-items: center;">InstaGrow <span class="version-badge">v1.0</span></h1>
+        <h1 style="display: flex; align-items: center;">InstaGrow <span class="version-badge">v1.1</span></h1>
       </div>
       <div class="status-indicator">
         <div id="statusDot" class="dot"></div>
@@ -53,6 +53,8 @@
             <option value="follow_followers">Bu Kişinin 'Takipçilerini' Takip Et</option>
             <option value="follow_following">Bu Kişinin 'Takip Ettiklerini' Takip Et</option>
             <option value="unfollow_nonfollowers">Geri Takip Etmeyenleri Çıkar (Unfollow)</option>
+            <option value="unfollow_followers">Geri Takip Edenleri Çıkar (Unfollow)</option>
+            <option value="unfollow_private">Hesabı Gizli Olanları Çıkar (Unfollow)</option>
           </optgroup>
           <optgroup label="Gönderi (Post/Reels) İşlemleri">
             <option value="follow_likers">Bu Gönderiyi 'Beğenenleri' Takip Et</option>
@@ -198,7 +200,15 @@
       <div class="settings-section accordion-section" id="section-logs" style="margin-top: 10px; padding: 0;">
         <div class="accordion-header" style="padding: 12px; margin-bottom: 0;">
           <h3 style="margin-bottom: 0;">İşlem Kayıtları (Log)</h3>
-          <span class="accordion-icon">▼</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button id="clearVisibleLogsBtn" title="Logları Temizle" style="background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; color: #8b92a5;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+            <span class="accordion-icon">▼</span>
+          </div>
         </div>
         <div class="accordion-content" style="padding: 0 12px 12px 12px;">
           <div id="logContainer" class="log-container">

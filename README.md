@@ -3,63 +3,66 @@
   
   # InstaGrow - All-in-One Instagram Otomasyon Aracı 🚀
   
-  **Instagram'da organik etkileşim ve güvenli takipçi yönetimi için tasarlanmış en kapsamlı, yeni nesil ve anti-ban korumalı Chrome Eklentisi.**
+  **Instagram'da organik etkileşim ve güvenli takipçi yönetimi için tasarlanmış kapsamlı, anti-ban korumalı Chrome Eklentisi.**
   
-  [![Version](https://img.shields.io/badge/Versiyon-v1.0-831843?style=for-the-badge)](https://github.com/gkhantyln)
+  [![Version](https://img.shields.io/badge/Versiyon-v1.1-831843?style=for-the-badge)](https://github.com/gkhantyln)
   [![Platform](https://img.shields.io/badge/Platform-Google%20Chrome-blue?style=for-the-badge&logo=googlechrome)](https://google.com/chrome)
 </div>
 
 ---
 
-## 🌟 Proje Hakkında (Neden InstaGrow?)
+## 🌟 Proje Hakkında
 
-Instagram hesabı büyütmek ya da yönetmek eskiden çok zaman alıcı, riskli ve sıkıcı bir işti. **InstaGrow**, bu süreci tamamen otomatikleştirerek hesabınızı **uyurken bile** organik olarak büyütmenizi sağlar! 
+Instagram hesabı büyütmek ya da yönetmek eskiden çok zaman alıcı, riskli ve sıkıcı bir işti. **InstaGrow**, bu süreci tamamen otomatikleştirerek hesabınızı organik olarak büyütmenizi sağlar.
 
-Bizi diğer uygulamalardan ayıran en büyük farkımız: **Güvenlik ve Akıllı Hedefleme**. 
+## 🔥 Özellikler
 
-Eğer siz de; 
-* Sizi takip etmeyenleri tek tek bulup çıkarmaktan yorulduysanız, 
-* Rakiplerinizin takipçilerini ya da gönderilerini beğenen aktif kitleyi kendi tarafınıza çekmek istiyorsanız, 
-* Güvenli sınırları aşmadan, Instagram kısıtlamalarına takılmadan (Anti-Ban) işlem yapmak istiyorsanız;
-**InstaGrow tam size göre!** 🎯
+### 🎯 Takip İşlemleri
+- **Bu Kişinin Takipçilerini Takip Et** — Hedef profilin takipçilerini otomatik takip eder
+- **Bu Kişinin Takip Ettiklerini Takip Et** — Hedef profilin takip listesini takip eder
+- **Gönderiyi Beğenenleri Takip Et** — Bir post/reels'i beğenen aktif kitleyi takip eder
+- **Gönderiye Yorum Yapanları Takip Et** — Yorum yapan etkileşimli kitleyi takip eder
 
-## 🔥 Öne Çıkan Özellikler
+### 🗑️ Takipten Çıkarma İşlemleri
+- **Geri Takip Etmeyenleri Çıkar** — Takip ettiğin ama seni takip etmeyenleri bulur ve çıkarır
+- **Geri Takip Edenleri Çıkar** — Seni takip eden ama senin takip ettiğin kişileri çıkarır
+- **Hesabı Gizli Olanları Çıkar** — Takip ettiğin gizli (private) hesapları toplu çıkarır
 
-### 🛡️ 1. Üst Düzey Güvenlik ve Anti-Ban (Rate-Limiting)
-Instagram algoritmalarının radarına yakalanmamak için asistanımız "insan gibi" davranır.
-* **Gecikmeli İşlem:** İşlemler arasına rastgele 5 ila 10 saniye (veya sizin belirlediğiniz bir süre) koyarak bot davranışından kaçınır.
-* **Günlük Limitler:** Belirlediğiniz maksimum işlem (örn: 100 kişi) sınırına ulaştığında otomatik olarak durur.
+### 🤖 Gelişmiş Filtreler & Otomasyon
+- **Beyaz Liste (Whitelist)** — Korunacak hesapları belirle, işlemlerden muaf tut
+- **Kara Liste (Blacklist)** — Etkileşim kurulmayacak hesapları listele
+- **Gizli Profilleri Atla** — Takip/unfollow işlemlerinde private hesapları geç
+- **Profil Fotoğrafı Olmayanları Atla** — Fotoğrafsız hesapları filtrele
+- **Otomatik Beğeni (Auto-Like)** — Takip etmeden önce son 2 gönderiyi otomatik beğen
+- **Otomatik Hikaye İzleme (Auto-Story)** — Takip etmeden önce hikayeyi görüldü yap
 
-### 🎯 2. Akıllı İşlem Çeşitliliği (Context-Aware)
-Bulunduğunuz sayfaya göre en etkili işlemleri tek tuşla yapar:
-* **Takip Etmeyenleri Çıkar (Unfollow):** Sadece sizi geri takip etmeyenleri bulur ve sessizce çıkarır.
-* **Takipçileri & Takipleri Takip Et:** Hedeflediğiniz sayfanın takipçilerini (potansiyel kitlenizi) otomatik takip eder.
-* **Beğenenleri & Yorum Yapanları Takip Et:** Bir gönderiyi (Post/Reels) aktif olarak beğenen ve yorumlayan, etkileşimi yüksek sıcak kitleyi toplar!
+### 🛡️ Güvenlik & Anti-Ban
+- İşlemler arasına rastgele gecikme (ayarlanabilir min/max saniye)
+- Günlük işlem limiti (aşılınca otomatik durur)
+- Rate limit algılama — Instagram kısıtlaması gelince işlemi durdurur
+- Tarama sırasında durdur butonu deaktif (unfollow işlemlerinde liste bütünlüğü korunur)
 
-### 🤖 3. Gelişmiş Filtreler & Otomasyon (Premium Özellikler)
-Hedef kitlenizi nokta atışı belirleyin ve etkileşiminizi uçurun!
-* **Kara Liste (Blacklist) ve Beyaz Liste (Whitelist):** Patron sizsiniz! Çıkarmak istemediğiniz dostlarınızı korumaya alın, etkileşim kurmak istemediklerinizi kara listeye atın.
-* **Gizli & Resimsiz Profilleri Atla:** Takipçisi veya gönderisi olmayan 'hayalet hesaplarla' vakit kaybetmeyin.
-* **Otomatik Beğeni (Auto-Like):** Birini takip etmeden *hemen önce* son 2 gönderisini otomatik beğenir. Geri takip oranınızı x3 katına çıkarır!
-* **Otomatik Hikaye (Story)İzleme:** Takip etmek üzere olduğunuz kişinin hikayesini sessizce 'görüldü' yapar. Merak uyandırır ve dikkat çeker!
+### 📊 Kayıt & Dışa Aktarma
+- Gerçek zamanlı işlem logları
+- Log panelinde anlık temizleme butonu
+- İşlem geçmişini **CSV** veya **TXT** olarak dışa aktar
+- Geçmişi temizleme
 
-### 📊 4. Detaylı Kayıt (Log) ve Dışa Aktarma
-Ne yaptığınızı asla unutmayın:
-* Gerçek zamanlı olarak arayüzde tüm logları saniye saniye izleyin.
-* Geçmişi **TXT** formatında saniyeler içinde bilgisayarınıza kaydedin, raporlayın!
+### ⚙️ Diğer
+- Query hash otomatik güncelleme (Hash Güncelle butonu)
+- Accordion panel yapısı (ayarlar katlanabilir)
+- Ayarlar otomatik kaydedilir (storage)
 
-## ⚙️ Kurulum (Nasıl Kullanılır?)
+## ⚙️ Kurulum
 
-1. Bu projeyi bilgisayarınıza indirin (`Clone` veya `Download ZIP`).
-2. Google Chrome tarayıcınızı açın ve adres çubuğuna `chrome://extensions/` yazın.
-3. Sağ üst köşeden **"Geliştirici Modu"** (Developer mode) seçeneğini aktif hale getirin.
-4. Sol üstten **"Paketlenmemiş öğe yükle"** (Load unpacked) butonuna tıklayın.
-5. İndirdiğiniz klasörün içindeki `extension` klasörünü seçin.
-6. Sağ üstteki yapboz ikonundan **InstaGrow** eklentisini sabitleyin ve kullanmaya başlayın!
+1. Projeyi bilgisayarınıza indirin (`Clone` veya `Download ZIP`).
+2. Chrome'da `chrome://extensions/` adresine gidin.
+3. **Geliştirici Modu**'nu aktif edin.
+4. **Paketlenmemiş öğe yükle** butonuna tıklayın.
+5. `extension` klasörünü seçin.
+6. Eklentiyi sabitleyin ve kullanmaya başlayın.
 
-## 📞 İletişim & Geliştirici Bilgileri
-
-Bu proje, Instagram organik büyüme süreçlerini optimize etmek için **Gökhan Taylan** tarafından büyük bir emekle geliştirilmiştir. 👇
+## 📞 İletişim
 
 <div align="center">
   
@@ -81,5 +84,5 @@ Bu proje, Instagram organik büyüme süreçlerini optimize etmek için **Gökha
   
   <br/><br/>
   
-  ⭐ *Projeyi beğendiyseniz sağ üstten yıldız vermeyi (Star) unutmayın!* 
+  ⭐ *Projeyi beğendiyseniz yıldız vermeyi unutmayın!*
 </div>

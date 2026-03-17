@@ -402,13 +402,16 @@ async function scanTargetUsers(actionType, settings = {}) {
             hasNextPage = true;
 
         } else if (actionType === 'follow_commenters') {
-            queryHash = queryHashCache.follow_commenters || '33ba35852cb50da46f5b5e889df7d159'; // Commenters
+            queryHash = queryHashCache.follow_commenters || '33ba35852cb50da46f5b5e889df7d159';
             edgePath = 'edge_media_to_comment';
             const shortcodeMatch = window.location.pathname.match(/\/(?:p|reel|tv)\/([^\/]+)/);
             if (!shortcodeMatch) {
                 throw new Error("Lütfen işlemi başlatmadan önce bir GÖNDERİ ekranına girin veya gönderiye tıklayın.");
             }
             varsObj = { shortcode: shortcodeMatch[1], first: 50 };
+        } else if (actionType === 'unfollow_nonfollowers' || actionType === 'unfollow_followers' || actionType === 'unfollow_private') {
+            // Bu tipler yukarıda zaten işlendi ve return yapıldı, buraya düşmemeli
+            return;
         } else {
             throw new Error("Bilinmeyen işlem türü: " + actionType);
         }

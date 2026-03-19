@@ -693,12 +693,17 @@ async function scanTargetUsers(actionType, settings = {}) {
 
         if (isRunning) {
             log(`Tarama tamamlandı. Toplam ${nonFollowers.length} hedef kullanıcı listeye eklendi.`, 'success');
-            // Listeyi storage'a kaydet ve yeni sekmede aç
-            chrome.storage.local.set({ nonFollowers, listActionType: actionType }, () => {
-                chrome.runtime.sendMessage({ type: 'OPEN_LIST_PAGE' });
-            });
         } else {
-            log('Tarama kullanıcı tarafından durduruldu.', 'info');
+            log(`Tarama durduruldu. ${nonFollowers.length} hedef kullanıcı listeye eklendi.`, 'info');
+        }
+        
+        // Listeyi her durumda kaydet (tamamlandı veya durduruldu)
+        if (nonFollowers.length > 0) {
+            chrome.storage.local.set({ nonFollowers, listActionType: actionType }, () => {
+                if (isRunning) {
+                    chrome.runtime.sendMessage({ type: 'OPEN_LIST_PAGE' });
+                }
+            });
         }
     } catch (err) {
         log(`Hata: ${err.message}`, 'error');

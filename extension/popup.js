@@ -256,6 +256,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   stopBtn.addEventListener('click', () => {
     sendCommandToContentScripts('STOP');
+    // İşlem durdurulunca list.html'e yönlendir
+    setTimeout(() => {
+      chrome.tabs.create({ url: chrome.runtime.getURL('list.html') });
+    }, 500);
   });
 
   // Listeyi Gör Butonu

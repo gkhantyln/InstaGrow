@@ -348,38 +348,36 @@ document.getElementById('startActionBtn').addEventListener('click', () => {
   chrome.storage.local.get(['settings'], (data) => {
     const settings = data.settings || {};
     chrome.storage.local.set({ nonFollowers: cleanList }, () => {
-      // Aktif Instagram sekmesine START_ACTION gönder
-      chrome.tabs.query({ url: '*://*.instagram.com/*' }, (tabs) => {
-        if (!tabs || tabs.length === 0) {
-          showToast('Lütfen önce bir Instagram sekmesi açın!', 'error');
-          return;
+      const payload = {
+        action: 'START_ACTION',
+        actionType,
+        settings: {
+          minDelay: settings.minDelay || 5,
+          maxDelay: settings.maxDelay || 10,
+          dailyLimit: settings.dailyLimit || 100,
+          searchCycleDelay: settings.searchCycleDelay || 1500,
+          searchCyclePauseDelay: settings.searchCyclePauseDelay || 5000,
+          unfollowDelay: settings.unfollowDelay || 2000,
+          unfollowPauseDelay: settings.unfollowPauseDelay || 10000,
+          skipPrivate: settings.skipPrivate || false,
+          skipNoPic: settings.skipNoPic || false,
+          autoLike: settings.autoLike || false,
+          autoStory: settings.autoStory || false,
+          whitelist: settings.whitelist || '',
+          blacklist: settings.blacklist || ''
         }
-        chrome.tabs.sendMessage(tabs[0].id, {
-          action: 'START_ACTION',
-          actionType,
-          settings: {
-            minDelay: settings.minDelay || 5,
-            maxDelay: settings.maxDelay || 10,
-            dailyLimit: settings.dailyLimit || 100,
-            searchCycleDelay: settings.searchCycleDelay || 1500,
-            searchCyclePauseDelay: settings.searchCyclePauseDelay || 5000,
-            unfollowDelay: settings.unfollowDelay || 2000,
-            unfollowPauseDelay: settings.unfollowPauseDelay || 10000,
-            skipPrivate: settings.skipPrivate || false,
-            skipNoPic: settings.skipNoPic || false,
-            autoLike: settings.autoLike || false,
-            autoStory: settings.autoStory || false,
-            whitelist: settings.whitelist || '',
-            blacklist: settings.blacklist || ''
-          }
-        }, () => {
-          if (chrome.runtime.lastError) {
-            showToast('Instagram sekmesine bağlanılamadı. Sayfayı yenileyip tekrar deneyin.', 'error');
-          } else {
-            showToast(`${selected.length} kişi için işlem başlatıldı.`);
-            document.getElementById('startActionBtn').disabled = true;
-          }
-        });
+      };
+      // Background üzerinden relay et — content script yoksa otomatik inject eder
+      chrome.runtime.sendMessage({ type: 'RELAY_TO_INSTAGRAM', payload }, (res) => {
+        if (!res || res.error) {
+          const msg = res?.error === 'no_tab'
+            ? 'Açık bir Instagram sekmesi bulunamadı. instagram.com\'u açıp tekrar deneyin.'
+            : 'Instagram sekmesine bağlanılamadı. Instagram sekmesini yenileyip tekrar deneyin.';
+          showToast(msg, 'error');
+        } else {
+          showToast(`${selected.length} kişi için işlem başlatıldı.`);
+          document.getElementById('startActionBtn').disabled = true;
+        }
       });
     });
   });

@@ -28,6 +28,42 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         addLog(request.msg, request.logType);
     } else if (request.type === 'OPEN_LIST_PAGE') {
         chrome.tabs.create({ url: chrome.runtime.getURL('list.html') });
+    } else if (request.type === 'RELAY_TO_INSTAGRAM') {
+        // list.js'den gelen START_ACTION'ı Instagram sekmesine ilet
+        // Content script inject edilmemişse önce inject et, sonra gönder
+        chrome.tabs.query({ url: '*://*.instagram.com/*' }, (tabs) => {
+            if (!tabs || tabs.length === 0) {
+                sendResponse({ error: 'no_tab' });
+                return;
+            }
+            const tabId = tabs[0].id;
+            chrome.tabs.sendMessage(tabId, request.payload, (res) => {
+                if (chrome.runtime.lastError) {
+                    // Content script yok — inject et ve tekrar dene
+                    chrome.scripting.executeScript(
+                        { target: { tabId }, files: ['content.js'] },
+                        () => {
+                            if (chrome.runtime.lastError) {
+                                sendResponse({ error: 'inject_failed' });
+                                return;
+                            }
+                            setTimeout(() => {
+                                chrome.tabs.sendMessage(tabId, request.payload, (res2) => {
+                                    if (chrome.runtime.lastError) {
+                                        sendResponse({ error: 'send_failed' });
+                                    } else {
+                                        sendResponse({ ok: true });
+                                    }
+                                });
+                            }, 500);
+                        }
+                    );
+                } else {
+                    sendResponse({ ok: true });
+                }
+            });
+        });
+        return true; // async
     } else if (request.type === 'FETCH_IMAGE') {
         // Background service worker host_permissions sayesinde direkt fetch yapabilir
         fetch(request.url)

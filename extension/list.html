@@ -207,6 +207,16 @@
       transition: all 0.2s; font-family: inherit; line-height: 1;
     }
     .remove-btn:hover { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,0.1); }
+    .manual-action-btn {
+      border: none; padding: 4px 10px; border-radius: 4px; font-size: 11px;
+      font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .manual-action-btn.follow { background: rgba(16,185,129,0.15); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
+    .manual-action-btn.follow:hover { background: rgba(16,185,129,0.3); }
+    .manual-action-btn.unfollow { background: rgba(239,68,68,0.12); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+    .manual-action-btn.unfollow:hover { background: rgba(239,68,68,0.25); }
+    .manual-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .empty-state { text-align: center; padding: 60px 24px; color: var(--muted); }
     .empty-state p { font-size: 15px; margin-bottom: 8px; color: var(--text); }
@@ -228,6 +238,30 @@
       background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
     }
     .action-type-label span { color: var(--accent); font-weight: 600; }
+
+    /* Avatar Zoom Lightbox */
+    .avatar { cursor: zoom-in; }
+    #avatarLightbox {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.85); align-items: center; justify-content: center;
+      backdrop-filter: blur(6px);
+    }
+    #avatarLightbox.open { display: flex; }
+    #avatarLightbox img {
+      width: 220px; height: 220px; border-radius: 50%;
+      object-fit: cover; border: 3px solid var(--accent);
+      box-shadow: 0 0 40px rgba(188,24,136,0.5);
+      animation: zoomIn 0.2s ease;
+    }
+    #avatarLightbox .lb-name {
+      position: absolute; bottom: calc(50% - 140px);
+      color: white; font-size: 15px; font-weight: 600;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    }
+    @keyframes zoomIn {
+      from { transform: scale(0.6); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -353,11 +387,18 @@
           <th style="width:100px">Not</th>
           <th style="width:80px">Hariç Tut</th>
           <th style="width:36px"></th>
+          <th style="width:90px">Manuel</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
   </div>
+</div>
+
+<!-- Avatar Lightbox -->
+<div id="avatarLightbox">
+  <img id="lbImg" src="" alt="">
+  <span class="lb-name" id="lbName"></span>
 </div>
 
 <script src="list.js"></script>

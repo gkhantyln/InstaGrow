@@ -64,6 +64,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             });
         });
         return true; // async
+    } else if (request.type === 'MANUAL_FOLLOW_ACTION') {
+        // list.html'den tek kullanıcı için manuel follow/unfollow
+        chrome.tabs.query({ url: '*://*.instagram.com/*' }, (tabs) => {
+            if (!tabs || tabs.length === 0) { sendResponse({ error: 'no_tab' }); return; }
+            const tabId = tabs[0].id;
+            const relay = () => chrome.tabs.sendMessage(tabId, request, (res) => {
+                if (chrome.runtime.lastError) { sendResponse({ error: 'send_failed' }); }
+                else { sendResponse(res); }
+            });
+            chrome.tabs.sendMessage(tabId, { type: 'PING' }, (r) => {
+                if (chrome.runtime.lastError) {
+                    chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] }, () => {
+                        setTimeout(relay, 500);
+                    });
+                } else { relay(); }
+            });
+        });
+        return true;
     } else if (request.type === 'FETCH_IMAGE') {
         // Background service worker host_permissions sayesinde direkt fetch yapabilir
         fetch(request.url)

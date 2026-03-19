@@ -947,7 +947,25 @@ async function startAction(actionType, settings) {
 
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'START_SCAN') {
+    if (request.type === 'PING') {
+        sendResponse({ ok: true });
+    } else if (request.type === 'MANUAL_FOLLOW_ACTION') {
+        const { userId, action } = request; // action: 'follow' | 'unfollow'
+        const endpoint = action === 'follow'
+            ? `https://www.instagram.com/api/v1/friendships/create/${userId}/`
+            : `https://www.instagram.com/api/v1/friendships/destroy/${userId}/`;
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'x-ig-app-id': '936619743392459',
+                'x-csrftoken': getCsrfToken() || '',
+                'content-type': 'application/x-www-form-urlencoded'
+            }
+        }).then(r => r.json())
+          .then(data => sendResponse({ ok: true, data }))
+          .catch(e => sendResponse({ ok: false, error: e.message }));
+        return true; // async
+    } else if (request.action === 'START_SCAN') {
         scanTargetUsers(request.actionType, request.settings || {});
         sendResponse({ ok: true });
     } else if (request.action === 'START_ACTION') {

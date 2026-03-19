@@ -208,6 +208,7 @@ function renderList() {
       <td><input class="note-input" type="text" placeholder="Not..." data-idx="${u._index}" value="${u._note || ''}"></td>
       <td><button class="exclude-btn ${u._excluded ? 'excluded' : ''}" data-idx="${u._index}">${u._excluded ? 'Dahil Et' : 'Hariç Tut'}</button></td>
       <td><button class="remove-btn" data-idx="${u._index}" title="Kaldır">🗑️</button></td>
+      <td><button class="manual-action-btn follow" data-userid="${u.id}" data-action="follow">+ Takip Et</button></td>
     `;
     tableBody.appendChild(tr);
 
@@ -243,6 +244,12 @@ function renderList() {
       renderList(); updateCounts();
     });
   });
+  tableBody.querySelectorAll('.manual-action-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const b = e.currentTarget;
+      manualAction(b.dataset.userid, b.dataset.action, b);
+    });
+  });
 }
 
 // ─── AVATAR ──────────────────────────────────────────────────────────────────
@@ -267,6 +274,60 @@ function loadAvatar(img, url) {
   avatarQueue.push({ img, url: url.replace(/&amp;/g, '&') });
   processAvatarQueue();
 }
+
+// ─── MANUEL FOLLOW/UNFOLLOW ──────────────────────────────────────────────────
+
+function manualAction(userId, action, btn) {
+  btn.disabled = true;
+  btn.textContent = '...';
+  chrome.runtime.sendMessage({ type: 'MANUAL_FOLLOW_ACTION', userId, action }, (res) => {
+    if (res && res.ok) {
+      if (action === 'follow') {
+        btn.textContent = '✓ Takip';
+        btn.className = 'manual-action-btn unfollow';
+        btn.dataset.action = 'unfollow';
+      } else {
+        btn.textContent = '+ Takip Et';
+        btn.className = 'manual-action-btn follow';
+        btn.dataset.action = 'follow';
+      }
+      btn.disabled = false;
+      showToast(action === 'follow' ? '✅ Takip edildi.' : '🚫 Takipten çıkıldı.');
+    } else {
+      btn.disabled = false;
+      btn.textContent = action === 'follow' ? '+ Takip Et' : '✓ Takip';
+      showToast('Hata: Instagram sekmesi açık olmalı.', 'error');
+    }
+  });
+}
+
+// ─── AVATAR LIGHTBOX ─────────────────────────────────────────────────────────
+
+const lightbox = document.getElementById('avatarLightbox');
+const lbImg = document.getElementById('lbImg');
+const lbName = document.getElementById('lbName');
+
+document.addEventListener('mouseover', e => {
+  const img = e.target.closest('img.avatar');
+  if (!img || !img.src || img.src.startsWith('data:image/gif')) return;
+  const row = img.closest('[data-id], tr');
+  let username = '';
+  if (row) {
+    const link = row.querySelector('a');
+    if (link) username = link.textContent.trim();
+  }
+  lbImg.src = img.src;
+  lbName.textContent = username;
+  lightbox.classList.add('open');
+});
+
+document.addEventListener('mouseout', e => {
+  const img = e.target.closest('img.avatar');
+  if (!img) return;
+  lightbox.classList.remove('open');
+});
+
+lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
 
 // ─── VIEW SWITCH ─────────────────────────────────────────────────────────────
 

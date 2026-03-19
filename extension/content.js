@@ -783,6 +783,13 @@ async function performAutoStoryView(userId, csrfToken) {
 
 async function startAction(actionType, settings) {
     if (isRunning) return;
+
+    // Storage'dan listeyi oku — liste sayfasından tetiklenince nonFollowers burada boş olabilir
+    const stored = await new Promise(resolve => chrome.storage.local.get(['nonFollowers'], resolve));
+    if (stored.nonFollowers && stored.nonFollowers.length > 0) {
+        nonFollowers = stored.nonFollowers;
+    }
+
     if (nonFollowers.length === 0) {
         log('İşlem yapılacak kullanıcı yok. Önce tarama yapın.', 'error');
         return;
@@ -942,11 +949,14 @@ async function startAction(actionType, settings) {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'START_SCAN') {
         scanTargetUsers(request.actionType, request.settings || {});
+        sendResponse({ ok: true });
     } else if (request.action === 'START_ACTION') {
+        sendResponse({ ok: true }); // hemen cevap ver, async işlem arka planda devam eder
         startAction(request.actionType, request.settings);
     } else if (request.action === 'STOP') {
         isRunning = false;
         log('İşlem durduruluyor...', 'info');
+        sendResponse({ ok: true });
     } else if (request.action === 'REFRESH_HASHES') {
         extractQueryHashesFromInstagram().then(() => {
             sendResponse({ success: true });

@@ -218,6 +218,40 @@
     .manual-action-btn.unfollow:hover { background: rgba(239,68,68,0.25); }
     .manual-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* Progress Log Band */
+    #progressBand {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+      background: #13151c; border-top: 1px solid var(--border);
+      padding: 8px 20px; display: none; align-items: center; gap: 12px;
+    }
+    #progressBand.active { display: flex; }
+    #progressBandText { font-size: 12px; color: var(--text); flex: 1; }
+    #progressBandText .prog-action { color: var(--accent); font-weight: 600; }
+    #progressBandText .prog-user { color: var(--success); }
+    #progressBar {
+      width: 160px; height: 6px; background: var(--border); border-radius: 3px; flex-shrink: 0;
+    }
+    #progressBarFill { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.3s; width: 0%; }
+    #progressCount { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+
+    /* Result Modal */
+    #resultModal {
+      display: none; position: fixed; inset: 0; z-index: 9998;
+      background: rgba(0,0,0,0.7); align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    #resultModal.open { display: flex; }
+    .result-box {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      padding: 32px 36px; max-width: 380px; width: 90%; text-align: center;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+    .result-box .result-icon { font-size: 48px; margin-bottom: 12px; }
+    .result-box h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .result-box p { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+    .result-box .result-stat { font-size: 28px; font-weight: 700; color: var(--accent); margin: 8px 0; }
+    .result-box .btn { width: 100%; justify-content: center; }
+
     .empty-state { text-align: center; padding: 60px 24px; color: var(--muted); }
     .empty-state p { font-size: 15px; margin-bottom: 8px; color: var(--text); }
 
@@ -386,6 +420,24 @@
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
+  </div>
+</div>
+
+<!-- Progress Band -->
+<div id="progressBand">
+  <div id="progressBandText">Bekleniyor...</div>
+  <div id="progressBar"><div id="progressBarFill"></div></div>
+  <div id="progressCount">0 / 0</div>
+</div>
+
+<!-- Result Modal -->
+<div id="resultModal">
+  <div class="result-box">
+    <div class="result-icon" id="resultIcon">✅</div>
+    <h2 id="resultTitle">İşlem Tamamlandı</h2>
+    <div class="result-stat" id="resultStat">0</div>
+    <p id="resultDesc"></p>
+    <button class="btn btn-primary" id="resultCloseBtn">Tamam</button>
   </div>
 </div>
 

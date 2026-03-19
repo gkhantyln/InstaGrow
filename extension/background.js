@@ -64,6 +64,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             });
         });
         return true; // async
+    } else if (request.type === 'ACTION_PROGRESS' || request.type === 'ACTION_COMPLETE') {
+        // content.js'den gelen progress/complete mesajlarını list.html sekmesine ilet
+        chrome.tabs.query({ url: chrome.runtime.getURL('list.html') }, (tabs) => {
+            tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, request).catch(() => {}));
+        });
     } else if (request.type === 'MANUAL_FOLLOW_ACTION') {
         // list.html'den tek kullanıcı için manuel follow/unfollow
         chrome.tabs.query({ url: '*://*.instagram.com/*' }, (tabs) => {

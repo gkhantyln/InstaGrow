@@ -869,6 +869,17 @@ async function startAction(actionType, settings) {
                     log(`${actionName} başarılı: @${username} (${processedToday}/${settings.dailyLimit})`, 'success');
                     updateState({ processed: appState.processed + 1 });
 
+                    // list.html'e progress bildir
+                    chrome.runtime.sendMessage({
+                        type: 'ACTION_PROGRESS',
+                        actionName,
+                        username,
+                        userId,
+                        status: 'success',
+                        processed: processedToday,
+                        total: nonFollowers.length
+                    });
+
                     // Takip işlemiyse geçmişe kaydet
                     if (actionType !== 'unfollow_nonfollowers' && actionType !== 'unfollow_followers' && actionType !== 'unfollow_private' && actionType !== 'unfollow_nonfollowers_tracked') {
                         chrome.storage.local.get(['followedByApp'], (stored) => {
@@ -934,8 +945,10 @@ async function startAction(actionType, settings) {
 
         if (isRunning) {
             log('İşlem süreci tamamlandı veya limite ulaşıldı.', 'success');
+            chrome.runtime.sendMessage({ type: 'ACTION_COMPLETE', processed: processedToday, total: nonFollowers.length });
         } else {
             log('İşlem kullanıcı tarafından durduruldu.', 'info');
+            chrome.runtime.sendMessage({ type: 'ACTION_COMPLETE', processed: processedToday, total: nonFollowers.length, stopped: true });
         }
     } catch (err) {
         log(`Hata: ${err.message}`, 'error');

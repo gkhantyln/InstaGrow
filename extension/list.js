@@ -451,6 +451,50 @@ document.getElementById('startActionBtn').addEventListener('click', () => {
   });
 });
 
+// ─── ACTION PROGRESS & RESULT ────────────────────────────────────────────────
+
+const progressBand = document.getElementById('progressBand');
+const progressBandText = document.getElementById('progressBandText');
+const progressBarFill = document.getElementById('progressBarFill');
+const progressCount = document.getElementById('progressCount');
+const resultModal = document.getElementById('resultModal');
+
+document.getElementById('resultCloseBtn').addEventListener('click', () => {
+  resultModal.classList.remove('open');
+});
+
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.type === 'ACTION_PROGRESS') {
+    const { actionName, username, processed, total } = msg;
+    const pct = total > 0 ? Math.round((processed / total) * 100) : 0;
+    progressBand.classList.add('active');
+    progressBandText.innerHTML = `<span class="prog-action">${actionName}</span>: <span class="prog-user">@${username}</span> işlendi`;
+    progressBarFill.style.width = pct + '%';
+    progressCount.textContent = `${processed} / ${total}`;
+
+    // Tablodaki ilgili satırın manuel butonunu güncelle
+    const btn = tableBody.querySelector(`.manual-action-btn[data-userid="${msg.userId}"]`);
+    if (btn) {
+      const isFollow = actionName === 'Takip Etme';
+      btn.textContent = isFollow ? '✓ Takip' : '+ Takip Et';
+      btn.className = `manual-action-btn ${isFollow ? 'unfollow' : 'follow'}`;
+      btn.dataset.action = isFollow ? 'unfollow' : 'follow';
+    }
+  }
+
+  if (msg.type === 'ACTION_COMPLETE') {
+    progressBand.classList.remove('active');
+    const { processed, total, stopped } = msg;
+    document.getElementById('resultIcon').textContent = stopped ? '⏹️' : '✅';
+    document.getElementById('resultTitle').textContent = stopped ? 'İşlem Durduruldu' : 'İşlem Tamamlandı';
+    document.getElementById('resultStat').textContent = processed;
+    document.getElementById('resultDesc').textContent = stopped
+      ? `İşlem manuel olarak durduruldu. Toplam ${processed} kullanıcı işlendi.`
+      : `${total} kullanıcıdan ${processed} tanesi başarıyla işlendi.`;
+    resultModal.classList.add('open');
+  }
+});
+
 // ─── EXPORT & CLEAR ──────────────────────────────────────────────────────────
 
 function getDateStr() {

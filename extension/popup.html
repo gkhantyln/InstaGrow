@@ -26,7 +26,7 @@
           <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
           <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
         </svg>
-        <h1 style="display: flex; align-items: center;">InstaGrow <span class="version-badge">v1.1</span></h1>
+        <h1 style="display: flex; align-items: center;">InstaGrow <span class="version-badge">v1.2</span></h1>
       </div>
       <div class="status-indicator">
         <div id="statusDot" class="dot"></div>
@@ -52,7 +52,8 @@
           <optgroup label="Profil Sayfası İşlemleri">
             <option value="follow_followers">Bu Kişinin 'Takipçilerini' Takip Et</option>
             <option value="follow_following">Bu Kişinin 'Takip Ettiklerini' Takip Et</option>
-            <option value="unfollow_nonfollowers">Geri Takip Etmeyenleri Çıkar (Unfollow)</option>
+            <option value="unfollow_nonfollowers">Geri Takip Etmeyenleri Çıkar (Tüm Liste)</option>
+            <option value="unfollow_nonfollowers_tracked">Geri Takip Etmeyenleri Çıkar (Uygulama ile Takip Edilenler)</option>
             <option value="unfollow_followers">Geri Takip Edenleri Çıkar (Unfollow)</option>
             <option value="unfollow_private">Hesabı Gizli Olanları Çıkar (Unfollow)</option>
           </optgroup>
@@ -63,6 +64,8 @@
         </select>
       </div>
 
+      <div id="actionInfoBox" style="display:none; margin: 0 0 10px 0; padding: 10px 12px; border-radius: 8px; font-size: 12px; line-height: 1.5; border: 1px solid; background: rgba(0,0,0,0.2);"></div>
+
       <div class="controls-group">
         <button id="startScanBtn" class="btn btn-primary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -70,14 +73,6 @@
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
           Hedefleri Tara
-        </button>
-        <button id="startActionBtn" class="btn btn-success" disabled>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="8.5" cy="7" r="4"></circle>
-            <polyline points="17 11 19 13 23 9"></polyline>
-          </svg>
-          İşlemi Başlat
         </button>
         <button id="stopBtn" class="btn btn-danger" style="display: none;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -98,32 +93,14 @@
             </svg>
             Hash Güncelle
           </button>
-        </div>
-        <div class="tools-row">
-          <button id="exportLogsBtn" class="btn btn-primary btn-sm">
+          <button id="openListBtn" class="btn btn-secondary btn-sm">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
+              <path d="M17 2H3a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"></path>
+              <line x1="8" y1="6" x2="16" y2="6"></line>
+              <line x1="8" y1="10" x2="16" y2="10"></line>
+              <line x1="8" y1="14" x2="12" y2="14"></line>
             </svg>
-            CSV İndir
-          </button>
-          <button id="exportTxtBtn" class="btn btn-primary btn-sm">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16h16V8l-6-6z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-            TXT İndir
-          </button>
-          <button id="clearLogsBtn" class="btn btn-danger btn-sm">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-            Geçmişi Sil
+            Listeyi Gör
           </button>
         </div>
       </div>
@@ -146,10 +123,56 @@
             <label>Günlük Maksimum İşlem</label>
             <input type="number" id="dailyLimit" value="100" min="10" max="500" style="width: 55px;">
           </div>
+
+          <hr class="premium-divider" style="margin: 10px 0;">
+
+          <div class="setting-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+            <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Tarama Limiti (0 = Sınırsız)</label>
+          </div>
+          <div class="setting-row">
+            <label title="Takip ettiklerinden en fazla kaç kişi taransın">Takip (Following) Limiti</label>
+            <input type="number" id="maxFollowing" value="0" min="0" max="10000" style="width: 65px;">
+          </div>
+          <div class="setting-row">
+            <label title="Takipçilerden en fazla kaç kişi taransın">Takipçi (Followers) Limiti</label>
+            <input type="number" id="maxFollowers" value="0" min="0" max="10000" style="width: 65px;">
+          </div>
+          <div class="setting-row">
+            <span style="font-size: 10px; color: #ef4444; line-height: 1.4; width:100%; text-align:center; padding-top:2px; font-weight:600;">
+              ⚠️ Doğru sonuç için Followers limitini Following limitinden en az 3-4 kat büyük ayarlayın.
+            </span>
+          </div>
           <div class="setting-row">
             <span
               style="font-size: 10px; color: #8b92a5; line-height: 1.4; width:100%; text-align:center; padding-top:4px;">
               Yüksek limitler ve kısa süreler hesabınızın kısıtlanmasına yol açabilir.
+            </span>
+          </div>
+
+          <hr class="premium-divider" style="margin: 10px 0;">
+
+          <div class="setting-row" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+            <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Gelişmiş Zamanlama Ayarları</label>
+          </div>
+          <div class="setting-row">
+            <label title="Her arama döngüsü arasındaki bekleme süresi (ms)">Arama Döngüsü Arası (ms)</label>
+            <input type="number" id="searchCycleDelay" value="1500" min="500" max="10000" style="width: 65px;">
+          </div>
+          <div class="setting-row">
+            <label title="Her 5 arama döngüsünden sonra bekleme süresi (ms)">5 Döngü Sonrası Bekleme (ms)</label>
+            <input type="number" id="searchCyclePauseDelay" value="5000" min="1000" max="30000" style="width: 65px;">
+          </div>
+          <div class="setting-row">
+            <label title="Her takipten çıkarma işlemi arasındaki bekleme süresi (ms)">Takip Çıkarma Arası (ms)</label>
+            <input type="number" id="unfollowDelay" value="2000" min="500" max="15000" style="width: 65px;">
+          </div>
+          <div class="setting-row">
+            <label title="Her 5 takipten çıkarma işleminden sonra bekleme süresi (ms)">5 Çıkarma Sonrası Bekleme (ms)</label>
+            <input type="number" id="unfollowPauseDelay" value="10000" min="2000" max="60000" style="width: 65px;">
+          </div>
+          <div class="setting-row">
+            <span style="font-size: 10px; color: #ef4444; line-height: 1.4; width:100%; text-align:center; padding-top:4px; font-weight: 600;">
+              ⚠️ UYARI: Bu ayarları değiştirmek hesabınızın yasaklanmasına yol açabilir. KENDİ RİSKİNİZDE KULLANIN!
             </span>
           </div>
         </div>

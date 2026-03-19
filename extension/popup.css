@@ -447,7 +447,9 @@ input[type="number"]:focus {
 }
 
 
-/* Spin Animation for Hash Refresh */
+#openListBtn {
+  display: none;
+}
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -485,3 +487,5 @@ input[type="number"]:focus {
   padding: 8px 10px;
   font-size: 11px;
 }
+
+#openListBtn { display: none; }

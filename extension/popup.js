@@ -1,16 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
   const actionTypeSelect = document.getElementById('actionType');
   const startScanBtn = document.getElementById('startScanBtn');
-  const startActionBtn = document.getElementById('startActionBtn');
   const stopBtn = document.getElementById('stopBtn');
   const scannedCount = document.getElementById('scannedCount');
   const actionCount = document.getElementById('actionCount');
   const logContainer = document.getElementById('logContainer');
   const statusText = document.getElementById('statusText');
   const statusDot = document.getElementById('statusDot');
-  const exportLogsBtn = document.getElementById('exportLogsBtn');
-  const exportTxtBtn = document.getElementById('exportTxtBtn');
-  const clearLogsBtn = document.getElementById('clearLogsBtn');
   const refreshHashBtn = document.getElementById('refreshHashBtn');
 
   const minDelay = document.getElementById('minDelay');
@@ -49,9 +45,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Load state and settings from storage
+  const skipPrivate = document.getElementById('skipPrivate');
   const skipNoPic = document.getElementById('skipNoPic');
   const autoLike = document.getElementById('autoLike');
   const autoStory = document.getElementById('autoStory');
+
+  const searchCycleDelay = document.getElementById('searchCycleDelay');
+  const searchCyclePauseDelay = document.getElementById('searchCyclePauseDelay');
+  const unfollowDelay = document.getElementById('unfollowDelay');
+  const unfollowPauseDelay = document.getElementById('unfollowPauseDelay');
+  const maxFollowing = document.getElementById('maxFollowing');
+  const maxFollowers = document.getElementById('maxFollowers');
 
   // Load state and settings from storage
   chrome.storage.local.get(['appState', 'settings', 'logs'], (data) => {
@@ -59,6 +63,12 @@ document.addEventListener('DOMContentLoaded', () => {
       minDelay.value = data.settings.minDelay || 5;
       maxDelay.value = data.settings.maxDelay || 10;
       dailyLimit.value = data.settings.dailyLimit || 100;
+      if (searchCycleDelay) searchCycleDelay.value = data.settings.searchCycleDelay || 1500;
+      if (searchCyclePauseDelay) searchCyclePauseDelay.value = data.settings.searchCyclePauseDelay || 5000;
+      if (unfollowDelay) unfollowDelay.value = data.settings.unfollowDelay || 2000;
+      if (unfollowPauseDelay) unfollowPauseDelay.value = data.settings.unfollowPauseDelay || 10000;
+      if (maxFollowing) maxFollowing.value = data.settings.maxFollowing || 0;
+      if (maxFollowers) maxFollowers.value = data.settings.maxFollowers || 0;
       if (data.settings.selectedAction) {
         actionTypeSelect.value = data.settings.selectedAction;
       }
@@ -87,6 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
         minDelay: parseInt(minDelay.value, 10),
         maxDelay: parseInt(maxDelay.value, 10),
         dailyLimit: parseInt(dailyLimit.value, 10),
+        searchCycleDelay: parseInt(searchCycleDelay ? searchCycleDelay.value : 1500, 10),
+        searchCyclePauseDelay: parseInt(searchCyclePauseDelay ? searchCyclePauseDelay.value : 5000, 10),
+        unfollowDelay: parseInt(unfollowDelay ? unfollowDelay.value : 2000, 10),
+        unfollowPauseDelay: parseInt(unfollowPauseDelay ? unfollowPauseDelay.value : 10000, 10),
+        maxFollowing: parseInt(maxFollowing ? maxFollowing.value : 0, 10),
+        maxFollowers: parseInt(maxFollowers ? maxFollowers.value : 0, 10),
         selectedAction: actionTypeSelect.value,
         skipPrivate: skipPrivate ? skipPrivate.checked : false,
         skipNoPic: skipNoPic ? skipNoPic.checked : false,
@@ -100,7 +116,60 @@ document.addEventListener('DOMContentLoaded', () => {
   minDelay.addEventListener('change', saveSettings);
   maxDelay.addEventListener('change', saveSettings);
   dailyLimit.addEventListener('change', saveSettings);
-  actionTypeSelect.addEventListener('change', saveSettings);
+  if (searchCycleDelay) searchCycleDelay.addEventListener('change', saveSettings);
+  if (searchCyclePauseDelay) searchCyclePauseDelay.addEventListener('change', saveSettings);
+  if (unfollowDelay) unfollowDelay.addEventListener('change', saveSettings);
+  if (unfollowPauseDelay) unfollowPauseDelay.addEventListener('change', saveSettings);
+  if (maxFollowing) maxFollowing.addEventListener('change', saveSettings);
+  if (maxFollowers) maxFollowers.addEventListener('change', saveSettings);
+  // Aksiyon bilgi mesajları
+  const actionInfoBox = document.getElementById('actionInfoBox');
+  const actionInfoMap = {
+    unfollow_nonfollowers: {
+      color: '#f59e0b',
+      bg: 'rgba(245,158,11,0.08)',
+      border: 'rgba(245,158,11,0.3)',
+      text: '📋 Tüm Liste Modu: Şu an takip ettiğin herkesi tarar, takipçi listende olmayanları gösterir. Limit ayarlarına dikkat edin.'
+    },
+    unfollow_nonfollowers_tracked: {
+      color: '#10b981',
+      bg: 'rgba(16,185,129,0.08)',
+      border: 'rgba(16,185,129,0.3)',
+      text: '🕐 Takip Geçmişi Modu: Sadece bu uygulama ile takip ettiğin kişileri tarar. Seni geri takip etmeyenler listelenir. Takip geçmişi yoksa liste boş gelir.'
+    },
+    unfollow_followers: {
+      color: '#ef4444',
+      bg: 'rgba(239,68,68,0.08)',
+      border: 'rgba(239,68,68,0.3)',
+      text: '⚠️ Dikkat: Bu mod seni takip eden kişileri çıkarır. Takipçi sayınız azalır.'
+    },
+    unfollow_private: {
+      color: '#8b92a5',
+      bg: 'rgba(139,146,165,0.08)',
+      border: 'rgba(139,146,165,0.3)',
+      text: '🔒 Gizli Hesap Modu: Takip ettiğin gizli (private) hesapları listeler ve çıkarmanıza olanak tanır.'
+    }
+  };
+
+  function updateActionInfo(val) {
+    if (!actionInfoBox) return;
+    const info = actionInfoMap[val];
+    if (info) {
+      actionInfoBox.style.display = 'block';
+      actionInfoBox.style.color = info.color;
+      actionInfoBox.style.background = info.bg;
+      actionInfoBox.style.borderColor = info.border;
+      actionInfoBox.textContent = info.text;
+    } else {
+      actionInfoBox.style.display = 'none';
+    }
+  }
+
+  updateActionInfo(actionTypeSelect.value);
+  actionTypeSelect.addEventListener('change', () => {
+    updateActionInfo(actionTypeSelect.value);
+    saveSettings();
+  });
   if (skipPrivate) skipPrivate.addEventListener('change', saveSettings);
   if (skipNoPic) skipNoPic.addEventListener('change', saveSettings);
   if (autoLike) autoLike.addEventListener('change', saveSettings);
@@ -125,25 +194,22 @@ document.addEventListener('DOMContentLoaded', () => {
       statusText.textContent = 'Hazır';
       statusDot.className = 'dot';
       startScanBtn.style.display = 'flex';
-      startActionBtn.style.display = 'flex';
       stopBtn.style.display = 'none';
       stopBtn.disabled = false;
       actionTypeSelect.disabled = false;
-
-      startActionBtn.disabled = !state.scanned || state.scanned === 0;
     } else if (state.status === 'scanning') {
       statusText.textContent = 'Taranıyor...';
       statusDot.className = 'dot running';
       startScanBtn.style.display = 'none';
-      startActionBtn.style.display = 'none';
       stopBtn.style.display = 'flex';
+      stopBtn.disabled = false;
       actionTypeSelect.disabled = true;
     } else if (state.status === 'processing') {
       statusText.textContent = 'İşleniyor...';
       statusDot.className = 'dot running';
       startScanBtn.style.display = 'none';
-      startActionBtn.style.display = 'none';
       stopBtn.style.display = 'flex';
+      stopBtn.disabled = false;
       actionTypeSelect.disabled = true;
     }
   }
@@ -173,34 +239,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Action Buttons
   startScanBtn.addEventListener('click', () => {
     const actionType = actionTypeSelect.value;
-    // Bu iki modda liste tam çekilmeden durdurma yapılamaz
-    if (actionType === 'unfollow_nonfollowers' || actionType === 'unfollow_followers' || actionType === 'unfollow_private') {
-      stopBtn.disabled = true;
-    }
     sendCommandToContentScripts('START_SCAN', {
       actionType,
       settings: {
         skipPrivate: skipPrivate ? skipPrivate.checked : false,
         skipNoPic: skipNoPic ? skipNoPic.checked : false,
         whitelist: whitelist ? whitelist.value : '',
-        blacklist: blacklist ? blacklist.value : ''
-      }
-    });
-  });
-
-  startActionBtn.addEventListener('click', () => {
-    sendCommandToContentScripts('START_ACTION', {
-      actionType: actionTypeSelect.value,
-      settings: {
-        minDelay: parseInt(minDelay.value, 10),
-        maxDelay: parseInt(maxDelay.value, 10),
-        dailyLimit: parseInt(dailyLimit.value, 10),
-        skipPrivate: skipPrivate ? skipPrivate.checked : false,
-        skipNoPic: skipNoPic ? skipNoPic.checked : false,
-        autoLike: autoLike ? autoLike.checked : false,
-        autoStory: autoStory ? autoStory.checked : false,
-        whitelist: whitelist ? whitelist.value : '',
-        blacklist: blacklist ? blacklist.value : ''
+        blacklist: blacklist ? blacklist.value : '',
+        searchCycleDelay: parseInt(searchCycleDelay ? searchCycleDelay.value : 1500, 10),
+        searchCyclePauseDelay: parseInt(searchCyclePauseDelay ? searchCyclePauseDelay.value : 5000, 10),
+        maxFollowing: parseInt(maxFollowing ? maxFollowing.value : 0, 10),
+        maxFollowers: parseInt(maxFollowers ? maxFollowers.value : 0, 10)
       }
     });
   });
@@ -209,15 +258,21 @@ document.addEventListener('DOMContentLoaded', () => {
     sendCommandToContentScripts('STOP');
   });
 
+  // Listeyi Gör Butonu
+  const openListBtn = document.getElementById('openListBtn');
+  if (openListBtn) {
+    openListBtn.addEventListener('click', () => {
+      chrome.tabs.create({ url: chrome.runtime.getURL('list.html') });
+    });
+  }
+
   // Hash Güncelleme Butonu
   if (refreshHashBtn) {
     refreshHashBtn.addEventListener('click', async () => {
       refreshHashBtn.disabled = true;
       const originalText = refreshHashBtn.innerHTML;
       refreshHashBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 2px; animation: spin 1s linear infinite;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36M20.49 15a9 9 0 0 1-14.85 3.36"></path></svg>Güncelleniyor...';
-      
       try {
-        // Content script'e hash güncelleme komutu gönder
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
           if (!tabs[0]) {
             appendLog('Aktif sekme bulunamadı.', 'error');
@@ -225,7 +280,6 @@ document.addEventListener('DOMContentLoaded', () => {
             refreshHashBtn.innerHTML = originalText;
             return;
           }
-          
           chrome.tabs.sendMessage(tabs[0].id, { action: 'REFRESH_HASHES' }, (response) => {
             if (chrome.runtime.lastError) {
               appendLog('Content script\'e bağlanılamadı. Sayfayı yenileyip tekrar deneyin.', 'error');
@@ -246,87 +300,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Export & Clear Logs Buttons
-  if (exportLogsBtn) {
-    exportLogsBtn.addEventListener('click', () => {
-      chrome.storage.local.get(['actionOutputLogs'], (result) => {
-        const logs = result.actionOutputLogs || [];
-        if (logs.length === 0) {
-          alert("Dışa aktarılacak işlem geçmişi bulunamadı.");
-          return;
-        }
-
-        let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // Add BOM for Excel UTF-8 support
-        csvContent += "Tarih,Islem,Kullanici Adi,ID,Durum\n";
-
-        logs.forEach(log => {
-          let row = `"${log.date || ''}","${log.action || ''}","${log.username || ''}","${log.userId || ''}","${log.status || ''}"`;
-          csvContent += row + "\n";
-        });
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-
-        // Format date string for filename
-        const d = new Date();
-        const dateStr = `${d.getFullYear()}${(d.getMonth() + 1).toString().padStart(2, '0')}${d.getDate().toString().padStart(2, '0')}_${d.getHours().toString().padStart(2, '0')}${d.getMinutes().toString().padStart(2, '0')}`;
-
-        link.setAttribute("download", `instagrow_islem_gecmisi_${dateStr}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      });
-    });
-  }
-
-  if (exportTxtBtn) {
-    exportTxtBtn.addEventListener('click', () => {
-      chrome.storage.local.get(['actionOutputLogs'], (result) => {
-        const logs = result.actionOutputLogs || [];
-        if (logs.length === 0) {
-          alert("Dışa aktarılacak işlem geçmişi bulunamadı.");
-          return;
-        }
-
-        let txtContent = "Tarih | İşlem | Kullanıcı Adı | ID | Durum\n";
-        txtContent += "--------------------------------------------------------\n";
-
-        logs.forEach(log => {
-          let row = `${log.date || ''} | ${log.action || ''} | @${log.username || ''} | ${log.userId || ''} | ${log.status || ''}`;
-          txtContent += row + "\n";
-        });
-
-        const encodedUri = "data:text/plain;charset=utf-8," + encodeURIComponent(txtContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-
-        // Format date string for filename
-        const d = new Date();
-        const dateStr = `${d.getFullYear()}${(d.getMonth() + 1).toString().padStart(2, '0')}${d.getDate().toString().padStart(2, '0')}_${d.getHours().toString().padStart(2, '0')}${d.getMinutes().toString().padStart(2, '0')}`;
-
-        link.setAttribute("download", `instagrow_islem_gecmisi_${dateStr}.txt`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      });
-    });
-  }
-
-  if (clearLogsBtn) {
-    clearLogsBtn.addEventListener('click', () => {
-      if (confirm("Tüm indirilebilir işlem geçmişini (CSV verisini) silmek istediğinize emin misiniz?")) {
-        chrome.storage.local.set({ actionOutputLogs: [] }, () => {
-          alert("Geçmiş başarıyla temizlendi.");
-        });
-      }
-    });
-  }
-
   const clearVisibleLogsBtn = document.getElementById('clearVisibleLogsBtn');
   if (clearVisibleLogsBtn) {
     clearVisibleLogsBtn.addEventListener('click', (e) => {
-      e.stopPropagation(); // accordion'un açılıp kapanmasını engelle
+      e.stopPropagation();
       logContainer.innerHTML = '';
       chrome.storage.local.set({ logs: [] });
     });

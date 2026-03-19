@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InstaGrow — All-in-One Instagram Otomasyon Aracı</title>
+  <meta name="description" content="Instagram hesabınızı güvenli ve organik olarak büyütün. Anti-ban korumalı Chrome eklentisi.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0b0f;
+      --bg2: #111318;
+      --bg3: #1a1d26;
+      --border: #23263a;
+      --text: #f0f2ff;
+      --muted: #7b82a0;
+      --accent: #bc1888;
+      --accent2: #f09433;
+      --grad: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+      --card-bg: #13151f;
+      --shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+    [data-theme="light"] {
+      --bg: #f5f6fa;
+      --bg2: #ffffff;
+      --bg3: #eef0f8;
+      --border: #dde0f0;
+      --text: #0d0f1a;
+      --muted: #6b7280;
+      --card-bg: #ffffff;
+      --shadow: 0 8px 40px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(10,11,15,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.3s;
+    }
+    [data-theme="light"] nav { background: rgba(245,246,250,0.9); }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 18px; font-weight: 700;
+      background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-logo svg { flex-shrink: 0; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .lang-btn {
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--muted); padding: 6px 14px; border-radius: 20px;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      font-family: inherit; transition: all 0.2s;
+    }
+    .lang-btn:hover { color: var(--text); border-color: var(--accent); }
+    .theme-btn {
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--muted); width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 16px; transition: all 0.2s;
+    }
+    .theme-btn:hover { color: var(--text); border-color: var(--accent); }
+    .nav-cta {
+      background: var(--grad); color: white;
+      padding: 8px 20px; border-radius: 20px;
+      font-size: 13px; font-weight: 600;
+      transition: opacity 0.2s; white-space: nowrap;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+    .btn-bug {
+      background: transparent; border: 1px solid rgba(239,68,68,0.4);
+      color: #f87171; padding: 7px 14px; border-radius: 20px;
+      font-size: 13px; font-weight: 500; white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .btn-bug:hover { background: rgba(239,68,68,0.1); border-color: #f87171; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 100px 24px 60px;
+      position: relative; overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute; top: 10%; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(188,24,136,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(188,24,136,0.12); border: 1px solid rgba(188,24,136,0.3);
+      color: #e879c8; padding: 6px 16px; border-radius: 20px;
+      font-size: 13px; font-weight: 500; margin-bottom: 28px;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #e879c8; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    h1 {
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
+      font-weight: 800; line-height: 1.15;
+      margin-bottom: 20px; max-width: 800px;
+    }
+    h1 .grad { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--muted); max-width: 560px; margin-bottom: 40px;
+    }
+    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .btn-primary {
+      background: var(--grad); color: white;
+      padding: 14px 32px; border-radius: 12px;
+      font-size: 15px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); opacity: 0.9; }
+    .btn-secondary {
+      background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+      padding: 14px 32px; border-radius: 12px;
+      font-size: 15px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .hero-stats {
+      display: flex; gap: 40px; margin-top: 60px; flex-wrap: wrap; justify-content: center;
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 2rem; font-weight: 800; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-label { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* SECTIONS */
+    section { padding: 80px 24px; max-width: 1100px; margin: 0 auto; }
+    .section-tag {
+      font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--accent); margin-bottom: 12px;
+    }
+    .section-title { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 700; margin-bottom: 14px; }
+    .section-sub { color: var(--muted); font-size: 1rem; max-width: 520px; }
+
+    /* FEATURES GRID */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px; margin-top: 48px;
+    }
+    .feature-card {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .feature-card:hover {
+      border-color: var(--accent); transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(188,24,136,0.12);
+    }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: rgba(188,24,136,0.12); border: 1px solid rgba(188,24,136,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 16px;
+    }
+    .feature-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .feature-desc { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+    /* HOW IT WORKS */
+    .steps { display: flex; flex-direction: column; gap: 0; margin-top: 48px; position: relative; }
+    .steps::before {
+      content: ''; position: absolute; left: 23px; top: 0; bottom: 0;
+      width: 2px; background: var(--border);
+    }
+    .step { display: flex; gap: 24px; padding-bottom: 36px; position: relative; }
+    .step-num {
+      width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+      background: var(--grad); display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 16px; color: white; position: relative; z-index: 1;
+    }
+    .step-content { padding-top: 10px; }
+    .step-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .step-desc { font-size: 14px; color: var(--muted); }
+
+    /* SAFETY */
+    .safety-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px; margin-top: 48px;
+    }
+    .safety-card {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 22px;
+    }
+    .safety-card .icon { font-size: 24px; margin-bottom: 10px; }
+    .safety-card .title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .safety-card .desc { font-size: 13px; color: var(--muted); }
+
+    /* INSTALL */
+    .install-wrap {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 20px; padding: 48px; margin-top: 48px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
+    }
+    @media(max-width:700px){ .install-wrap { grid-template-columns: 1fr; padding: 28px; } }
+    .install-steps { display: flex; flex-direction: column; gap: 16px; }
+    .install-step {
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+    .install-step-num {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(188,24,136,0.15); border: 1px solid rgba(188,24,136,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--accent);
+    }
+    .install-step-text { font-size: 14px; color: var(--muted); padding-top: 4px; }
+    .install-step-text strong { color: var(--text); }
+    .code-block {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 18px;
+      font-family: monospace; font-size: 13px; color: #e879c8;
+      margin-top: 8px;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 24px; text-align: center;
+      color: var(--muted); font-size: 13px;
+    }
+    .footer-links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+    .footer-links a { color: var(--muted); transition: color 0.2s; }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-social { display: flex; gap: 14px; justify-content: center; margin-bottom: 20px; }
+    .social-icon {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--bg3); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); transition: all 0.2s;
+    }
+    .social-icon:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* DIVIDER */
+    .full-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    @media(max-width:600px){
+      .hero-stats { gap: 24px; }
+      .nav-cta { display: none; }
+      .btn-bug { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#ng)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <defs>
+        <linearGradient id="ng" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#f09433"/>
+          <stop offset="100%" stop-color="#bc1888"/>
+        </linearGradient>
+      </defs>
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+    InstaGrow
+  </div>
+  <div class="nav-right">
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">🌐 EN</button>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Tema değiştir">🌙</button>
+    <a class="btn-bug" href="guide.html" data-tr="📖 Kullanıcı Talimatı" data-en="📖 User Guide">📖 Kullanıcı Talimatı</a>
+    <a class="btn-bug" href="https://github.com/gkhantyln/instagrow/issues/new?template=bug_report.md" target="_blank" data-tr="🐛 Bug Bildir" data-en="🐛 Report Bug">🐛 Bug Bildir</a>
+    <a class="nav-cta" href="https://github.com/gkhantyln/instagrow" target="_blank" data-tr="GitHub'dan İndir" data-en="Download on GitHub">GitHub'dan İndir</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-glow"></div>
+  <div class="badge"><span class="badge-dot"></span> <span id="versionBadge" data-tr="Yükleniyor..." data-en="Loading...">Yükleniyor...</span></div>
+  <h1>
+    <span data-tr="Instagram'ı" data-en="Grow Your">Instagram'ı</span>
+    <br><span class="grad" data-tr="Akıllıca Büyüt" data-en="Instagram Smartly">Akıllıca Büyüt</span>
+  </h1>
+  <p class="hero-sub" data-tr="Anti-ban korumalı, tamamen tarayıcı tabanlı Chrome eklentisi. Takip et, takipten çık, filtrele — hepsi tek yerden." data-en="Anti-ban protected, fully browser-based Chrome extension. Follow, unfollow, filter — all from one place.">
+    Anti-ban korumalı, tamamen tarayıcı tabanlı Chrome eklentisi. Takip et, takipten çık, filtrele — hepsi tek yerden.
+  </p>
+  <div class="hero-btns">
+    <a class="btn-primary" href="https://github.com/gkhantyln/instagrow" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span data-tr="Ücretsiz İndir" data-en="Download Free">Ücretsiz İndir</span>
+    </a>
+    <a class="btn-secondary" href="#features">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+      <span data-tr="Özellikleri Gör" data-en="See Features">Özellikleri Gör</span>
+    </a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">8+</div><div class="stat-label" data-tr="İşlem Modu" data-en="Action Modes">İşlem Modu</div></div>
+    <div class="stat"><div class="stat-num">0</div><div class="stat-label" data-tr="Dış Sunucu" data-en="External Server">Dış Sunucu</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label" data-tr="Tarayıcı Tabanlı" data-en="Browser Based">Tarayıcı Tabanlı</div></div>
+    <div class="stat"><div class="stat-num">MV3</div><div class="stat-label" data-tr="Manifest V3" data-en="Manifest V3">Manifest V3</div></div>
+  </div>
+</div>
+
+<hr class="full-divider">
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-tag" data-tr="ÖZELLİKLER" data-en="FEATURES">ÖZELLİKLER</div>
+  <div class="section-title" data-tr="Her şey tek eklentide" data-en="Everything in one extension">Her şey tek eklentide</div>
+  <p class="section-sub" data-tr="Takip etmekten takipten çıkarmaya, filtrelemeden dışa aktarmaya kadar ihtiyacınız olan her şey." data-en="From following to unfollowing, filtering to exporting — everything you need.">
+    Takip etmekten takipten çıkarmaya, filtrelemeden dışa aktarmaya kadar ihtiyacınız olan her şey.
+  </p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <div class="feature-title" data-tr="Hedefli Takip" data-en="Targeted Follow">Hedefli Takip</div>
+      <div class="feature-desc" data-tr="Rakip profillerin takipçilerini, gönderi beğenenlerini veya yorum yapanlarını otomatik takip et." data-en="Auto-follow followers of competitor profiles, post likers, or commenters.">Rakip profillerin takipçilerini, gönderi beğenenlerini veya yorum yapanlarını otomatik takip et.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🗑️</div>
+      <div class="feature-title" data-tr="Akıllı Unfollow" data-en="Smart Unfollow">Akıllı Unfollow</div>
+      <div class="feature-desc" data-tr="Geri takip etmeyenleri, gizli hesapları veya uygulama ile takip ettiklerini kolayca çıkar." data-en="Easily remove non-followers, private accounts, or those you followed via the app.">Geri takip etmeyenleri, gizli hesapları veya uygulama ile takip ettiklerini kolayca çıkar.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <div class="feature-title" data-tr="Gelişmiş Liste Sayfası" data-en="Advanced List Page">Gelişmiş Liste Sayfası</div>
+      <div class="feature-desc" data-tr="Karşılaştır ve liste görünümü, filtreleme, sıralama, not ekleme, hariç tutma ve toplu işlem." data-en="Compare & list views, filtering, sorting, notes, exclusions, and bulk actions.">Karşılaştır ve liste görünümü, filtreleme, sıralama, not ekleme, hariç tutma ve toplu işlem.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <div class="feature-title" data-tr="Otomasyon" data-en="Automation">Otomasyon</div>
+      <div class="feature-desc" data-tr="Otomatik beğeni (son 2 gönderi) ve otomatik hikaye izleme ile etkileşimi artır." data-en="Boost engagement with auto-like (last 2 posts) and auto-story view.">Otomatik beğeni (son 2 gönderi) ve otomatik hikaye izleme ile etkileşimi artır.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🛡️</div>
+      <div class="feature-title" data-tr="Anti-Ban Koruma" data-en="Anti-Ban Protection">Anti-Ban Koruma</div>
+      <div class="feature-desc" data-tr="Rastgele gecikmeler, günlük limit, rate limit algılama ve 5 işlemde bir otomatik mola." data-en="Random delays, daily limits, rate limit detection, and auto-pause every 5 actions.">Rastgele gecikmeler, günlük limit, rate limit algılama ve 5 işlemde bir otomatik mola.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📤</div>
+      <div class="feature-title" data-tr="Dışa Aktarma" data-en="Export">Dışa Aktarma</div>
+      <div class="feature-desc" data-tr="İşlem geçmişini CSV, TXT veya JSON formatında indir. Beyaz/kara liste desteği." data-en="Download action history as CSV, TXT, or JSON. Whitelist/blacklist support.">İşlem geçmişini CSV, TXT veya JSON formatında indir. Beyaz/kara liste desteği.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔑</div>
+      <div class="feature-title" data-tr="Otomatik Hash Güncelleme" data-en="Auto Hash Update">Otomatik Hash Güncelleme</div>
+      <div class="feature-desc" data-tr="GraphQL query hash'leri 24 saatte bir otomatik yenilenir, manuel güncelleme de mümkün." data-en="GraphQL query hashes auto-refresh every 24h, manual update also available.">GraphQL query hash'leri 24 saatte bir otomatik yenilenir, manuel güncelleme de mümkün.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🕐</div>
+      <div class="feature-title" data-tr="Takip Geçmişi" data-en="Follow History">Takip Geçmişi</div>
+      <div class="feature-desc" data-tr="Uygulama ile takip ettiğin kişiler kaydedilir. Sadece onlar arasından geri takip etmeyenleri bul." data-en="People you followed via the app are saved. Find non-followers only among them.">Uygulama ile takip ettiğin kişiler kaydedilir. Sadece onlar arasından geri takip etmeyenleri bul.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <div class="feature-title" data-tr="Gizlilik Öncelikli" data-en="Privacy First">Gizlilik Öncelikli</div>
+      <div class="feature-desc" data-tr="Hiçbir veri dış sunucuya gönderilmez. Tüm veriler yalnızca tarayıcında saklanır." data-en="No data is sent to external servers. All data is stored only in your browser.">Hiçbir veri dış sunucuya gönderilmez. Tüm veriler yalnızca tarayıcında saklanır.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="full-divider">
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-tag" data-tr="NASIL ÇALIŞIR" data-en="HOW IT WORKS">NASIL ÇALIŞIR</div>
+  <div class="section-title" data-tr="3 adımda başla" data-en="Get started in 3 steps">3 adımda başla</div>
+  <p class="section-sub" data-tr="Kurulumdan ilk işleme dakikalar içinde ulaş." data-en="From installation to first action in minutes.">Kurulumdan ilk işleme dakikalar içinde ulaş.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title" data-tr="Eklentiyi Kur" data-en="Install the Extension">Eklentiyi Kur</div>
+        <div class="step-desc" data-tr="GitHub'dan indirip Chrome'a paketlenmemiş eklenti olarak yükle. Geliştirici modu yeterli." data-en="Download from GitHub and load as an unpacked extension in Chrome. Developer mode is enough.">GitHub'dan indirip Chrome'a paketlenmemiş eklenti olarak yükle. Geliştirici modu yeterli.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title" data-tr="İşlemi Seç ve Tara" data-en="Select Action & Scan">İşlemi Seç ve Tara</div>
+        <div class="step-desc" data-tr="Popup'tan işlem türünü seç, ayarları yapılandır ve 'Hedefleri Tara' butonuna bas. Liste otomatik açılır." data-en="Select action type from popup, configure settings, and press 'Scan Targets'. The list opens automatically.">Popup'tan işlem türünü seç, ayarları yapılandır ve 'Hedefleri Tara' butonuna bas. Liste otomatik açılır.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title" data-tr="Listeden İşlemi Başlat" data-en="Start Action from List">Listeden İşlemi Başlat</div>
+        <div class="step-desc" data-tr="Liste sayfasında kullanıcıları filtrele, seç ve 'İşlemi Başlat' butonuna bas. Geçmişi CSV/TXT/JSON olarak indir." data-en="Filter and select users on the list page, then press 'Start Action'. Download history as CSV/TXT/JSON.">Liste sayfasında kullanıcıları filtrele, seç ve 'İşlemi Başlat' butonuna bas. Geçmişi CSV/TXT/JSON olarak indir.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="full-divider">
+
+<!-- SAFETY -->
+<section id="safety">
+  <div class="section-tag" data-tr="GÜVENLİK" data-en="SAFETY">GÜVENLİK</div>
+  <div class="section-title" data-tr="Hesabın güvende" data-en="Your account is safe">Hesabın güvende</div>
+  <p class="section-sub" data-tr="Her özellik, Instagram'ın kısıtlamalarını tetiklememek için tasarlandı." data-en="Every feature is designed to avoid triggering Instagram's restrictions.">Her özellik, Instagram'ın kısıtlamalarını tetiklememek için tasarlandı.</p>
+  <div class="safety-grid">
+    <div class="safety-card">
+      <div class="icon">⏱️</div>
+      <div class="title" data-tr="Rastgele Gecikme" data-en="Random Delay">Rastgele Gecikme</div>
+      <div class="desc" data-tr="Her işlem arasına insan davranışını taklit eden rastgele bekleme süresi eklenir." data-en="Random wait time mimicking human behavior is added between each action.">Her işlem arasına insan davranışını taklit eden rastgele bekleme süresi eklenir.</div>
+    </div>
+    <div class="safety-card">
+      <div class="icon">📊</div>
+      <div class="title" data-tr="Günlük Limit" data-en="Daily Limit">Günlük Limit</div>
+      <div class="desc" data-tr="Günlük maksimum işlem sayısı ayarlanabilir. Limite ulaşınca işlem otomatik durur." data-en="Daily maximum action count is configurable. Stops automatically when limit is reached.">Günlük maksimum işlem sayısı ayarlanabilir. Limite ulaşınca işlem otomatik durur.</div>
+    </div>
+    <div class="safety-card">
+      <div class="icon">🚦</div>
+      <div class="title" data-tr="Rate Limit Algılama" data-en="Rate Limit Detection">Rate Limit Algılama</div>
+      <div class="desc" data-tr="Instagram HTTP 429 döndürdüğünde işlem anında durur, hesabın korunur." data-en="When Instagram returns HTTP 429, the action stops immediately to protect your account.">Instagram HTTP 429 döndürdüğünde işlem anında durur, hesabın korunur.</div>
+    </div>
+    <div class="safety-card">
+      <div class="icon">☕</div>
+      <div class="title" data-tr="Otomatik Mola" data-en="Auto Pause">Otomatik Mola</div>
+      <div class="desc" data-tr="Her 5 işlemde bir uzun mola verilir. Süre ayarlanabilir." data-en="A long pause is taken every 5 actions. Duration is configurable.">Her 5 işlemde bir uzun mola verilir. Süre ayarlanabilir.</div>
+    </div>
+    <div class="safety-card">
+      <div class="icon">🏠</div>
+      <div class="title" data-tr="Yerel Depolama" data-en="Local Storage">Yerel Depolama</div>
+      <div class="desc" data-tr="Tüm veriler yalnızca tarayıcında saklanır. Dış sunucu bağlantısı yoktur." data-en="All data is stored only in your browser. No external server connection.">Tüm veriler yalnızca tarayıcında saklanır. Dış sunucu bağlantısı yoktur.</div>
+    </div>
+    <div class="safety-card">
+      <div class="icon">⚪</div>
+      <div class="title" data-tr="Beyaz / Kara Liste" data-en="White / Black List">Beyaz / Kara Liste</div>
+      <div class="desc" data-tr="Korunacak hesapları beyaz listeye, atlanacakları kara listeye ekle." data-en="Add accounts to protect to the whitelist, and accounts to skip to the blacklist.">Korunacak hesapları beyaz listeye, atlanacakları kara listeye ekle.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="full-divider">
+
+<!-- INSTALL -->
+<section id="install">
+  <div class="section-tag" data-tr="KURULUM" data-en="INSTALLATION">KURULUM</div>
+  <div class="section-title" data-tr="Dakikalar içinde hazır" data-en="Ready in minutes">Dakikalar içinde hazır</div>
+  <div class="install-wrap">
+    <div>
+      <p style="color:var(--muted);font-size:15px;margin-bottom:28px;" data-tr="Chrome Web Store'da henüz yayınlanmadı. GitHub'dan indirip geliştirici modunda yükleyebilirsin." data-en="Not yet published on Chrome Web Store. Download from GitHub and load in developer mode.">
+        Chrome Web Store'da henüz yayınlanmadı. GitHub'dan indirip geliştirici modunda yükleyebilirsin.
+      </p>
+      <div class="install-steps">
+        <div class="install-step">
+          <div class="install-step-num">1</div>
+          <div class="install-step-text" data-tr="<strong>GitHub'dan indir</strong> — ZIP olarak indir veya clone'la" data-en="<strong>Download from GitHub</strong> — Download as ZIP or clone"><strong>GitHub'dan indir</strong> — ZIP olarak indir veya clone'la</div>
+        </div>
+        <div class="install-step">
+          <div class="install-step-num">2</div>
+          <div class="install-step-text">
+            <span data-tr="Chrome adres çubuğuna yaz:" data-en="Type in Chrome address bar:">Chrome adres çubuğuna yaz:</span>
+            <div class="code-block">chrome://extensions/</div>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="install-step-num">3</div>
+          <div class="install-step-text" data-tr="<strong>Geliştirici Modu</strong>'nu aç (sağ üst köşe)" data-en="Enable <strong>Developer Mode</strong> (top right corner)"><strong>Geliştirici Modu</strong>'nu aç (sağ üst köşe)</div>
+        </div>
+        <div class="install-step">
+          <div class="install-step-num">4</div>
+          <div class="install-step-text" data-tr="<strong>Paketlenmemiş öğe yükle</strong>'ye tıkla ve <code>extension</code> klasörünü seç" data-en="Click <strong>Load unpacked</strong> and select the <code>extension</code> folder"><strong>Paketlenmemiş öğe yükle</strong>'ye tıkla ve <code>extension</code> klasörünü seç</div>
+        </div>
+        <div class="install-step">
+          <div class="install-step-num">5</div>
+          <div class="install-step-text" data-tr="Eklentiyi sabitle ve Instagram'a git 🚀" data-en="Pin the extension and go to Instagram 🚀">Eklentiyi sabitle ve Instagram'a git 🚀</div>
+        </div>
+      </div>
+      <a class="btn-primary" href="https://github.com/gkhantyln/instagrow" target="_blank" style="margin-top:28px;display:inline-flex;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        <span data-tr="GitHub'a Git" data-en="Go to GitHub">GitHub'a Git</span>
+      </a>
+    </div>
+    <div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:24px;font-family:monospace;font-size:13px;line-height:2;">
+        <div style="color:var(--muted);margin-bottom:12px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;" data-tr="Gereksinimler" data-en="Requirements">Gereksinimler</div>
+        <div><span style="color:#10b981;">✓</span> <span style="color:var(--text);">Google Chrome</span> <span style="color:var(--muted);">v88+</span></div>
+        <div><span style="color:#10b981;">✓</span> <span style="color:var(--text);">Manifest V3</span> <span style="color:var(--muted);">destekli</span></div>
+        <div><span style="color:#10b981;">✓</span> <span style="color:var(--text);">Instagram</span> <span style="color:var(--muted);">hesabı</span></div>
+        <div><span style="color:#10b981;">✓</span> <span style="color:var(--text);">İnternet</span> <span style="color:var(--muted);">bağlantısı</span></div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+          <div style="color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;" data-tr="İzinler" data-en="Permissions">İzinler</div>
+          <div><span style="color:#f59e0b;">◆</span> <span style="color:var(--muted);">storage</span></div>
+          <div><span style="color:#f59e0b;">◆</span> <span style="color:var(--muted);">tabs</span></div>
+          <div><span style="color:#f59e0b;">◆</span> <span style="color:var(--muted);">scripting</span></div>
+          <div><span style="color:#f59e0b;">◆</span> <span style="color:var(--muted);">*.instagram.com</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="full-divider">
+
+<!-- FOOTER -->
+<footer>
+  <div class="nav-logo" style="justify-content:center;margin-bottom:20px;">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#nf)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <defs>
+        <linearGradient id="nf" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#f09433"/>
+          <stop offset="100%" stop-color="#bc1888"/>
+        </linearGradient>
+      </defs>
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+    InstaGrow
+  </div>
+  <div class="footer-social">
+    <a class="social-icon" href="https://github.com/gkhantyln" target="_blank" title="GitHub">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+    </a>
+    <a class="social-icon" href="https://www.linkedin.com/in/gkhantyln/" target="_blank" title="LinkedIn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+    </a>
+    <a class="social-icon" href="https://www.instagram.com/ayzvisionstudio/" target="_blank" title="Instagram">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+    </a>
+    <a class="social-icon" href="https://t.me/llcoder" target="_blank" title="Telegram">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </a>
+    <a class="social-icon" href="mailto:tylngkhn@gmail.com" title="Email">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    </a>
+  </div>
+  <div class="footer-links">
+    <a href="#features" data-tr="Özellikler" data-en="Features">Özellikler</a>
+    <a href="#how" data-tr="Nasıl Çalışır" data-en="How It Works">Nasıl Çalışır</a>
+    <a href="#safety" data-tr="Güvenlik" data-en="Safety">Güvenlik</a>
+    <a href="#install" data-tr="Kurulum" data-en="Installation">Kurulum</a>
+    <a href="https://github.com/gkhantyln/instagrow" target="_blank">GitHub</a>
+  </div>
+  <p data-tr="© 2025 InstaGrow. Gökhan Taylan tarafından yapıldı. Tüm hakları saklıdır." data-en="© 2025 InstaGrow. Made by Gökhan Taylan. All rights reserved.">© 2025 InstaGrow. Gökhan Taylan tarafından yapıldı. Tüm hakları saklıdır.</p>
+</footer>
+
+<script>
+  // THEME
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️';
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  }
+
+  // LANG
+  let currentLang = localStorage.getItem('lang') || 'tr';
+
+  function toggleLang() {
+    currentLang = currentLang === 'tr' ? 'en' : 'tr';
+    localStorage.setItem('lang', currentLang);
+    applyLang();
+  }
+
+  function applyLang() {
+    document.getElementById('langBtn').textContent = currentLang === 'tr' ? '🌐 EN' : '🌐 TR';
+    document.querySelectorAll('[data-tr]').forEach(el => {
+      const val = el.getAttribute('data-' + currentLang);
+      if (val) el.innerHTML = val;
+    });
+    document.documentElement.lang = currentLang;
+    document.title = currentLang === 'tr'
+      ? 'InstaGrow — All-in-One Instagram Otomasyon Aracı'
+      : 'InstaGrow — All-in-One Instagram Automation Tool';
+  }
+
+  // GITHUB RELEASE VERSION
+  async function fetchLatestVersion() {
+    const el = document.getElementById('versionBadge');
+    try {
+      const res = await fetch('https://api.github.com/repos/gkhantyln/instagrow/releases/latest');
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      const tag = data.tag_name || '';
+      // tag_name genellikle "v1.2.0" veya "1.2.0" formatında gelir
+      const version = tag.startsWith('v') ? tag : 'v' + tag;
+      el.setAttribute('data-tr', `${version} — Şimdi Yayında`);
+      el.setAttribute('data-en', `${version} — Now Live`);
+      el.textContent = currentLang === 'tr' ? `${version} — Şimdi Yayında` : `${version} — Now Live`;
+    } catch {
+      // Release yoksa manifest.json'dan fallback
+      try {
+        const res = await fetch('https://raw.githubusercontent.com/gkhantyln/instagrow/main/extension/manifest.json');
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        const version = 'v' + (data.version || '1.2.0');
+        el.setAttribute('data-tr', `${version} — Şimdi Yayında`);
+        el.setAttribute('data-en', `${version} — Now Live`);
+        el.textContent = currentLang === 'tr' ? `${version} — Şimdi Yayında` : `${version} — Now Live`;
+      } catch {
+        el.setAttribute('data-tr', 'v1.2 — Şimdi Yayında');
+        el.setAttribute('data-en', 'v1.2 — Now Live');
+        el.textContent = currentLang === 'tr' ? 'v1.2 — Şimdi Yayında' : 'v1.2 — Now Live';
+      }
+    }
+  }
+
+  // INIT
+  (function init() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('themeBtn').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+    applyLang();
+    fetchLatestVersion();
+  })();
+
+  // SMOOTH NAV ACTIVE
+  const sections = document.querySelectorAll('section[id]');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) current = s.id; });
+  });
+</script>
+</body>
+</html>

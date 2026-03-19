@@ -26,5 +26,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.runtime.sendMessage({ type: 'UPDATE_STATE', state: request.state }).catch(() => {});
     } else if (request.type === 'ADD_LOG') {
         addLog(request.msg, request.logType);
+    } else if (request.type === 'OPEN_LIST_PAGE') {
+        chrome.tabs.create({ url: chrome.runtime.getURL('list.html') });
+    } else if (request.type === 'FETCH_IMAGE') {
+        // Background service worker host_permissions sayesinde direkt fetch yapabilir
+        fetch(request.url)
+            .then(res => res.blob())
+            .then(blob => new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            }))
+            .then(dataUrl => sendResponse({ dataUrl }))
+            .catch(() => sendResponse({ dataUrl: null }));
+        return true; // async
     }
 });

@@ -159,7 +159,7 @@ function updateState(newState) {
 }
 
 function log(msg, type = 'info') {
-    console.log(`[InstaCleaner] ${msg}`);
+    console.log(`[InstaGrow] ${msg}`);
     chrome.runtime.sendMessage({ type: 'ADD_LOG', msg, logType: type });
 }
 
@@ -202,43 +202,161 @@ async function getTargetUserId(username) {
     }
 }
 
-async function fetchFollowList(userId, type, csrfToken, onProgress, ignoreStop = false) {
+async function fetchFollowersList(userId, csrfToken, onProgress, settings = {}) {
+    // Followers için GraphQL endpoint - 50'şer çeker, V1 API'nin 12'şer kısıtlamasından iyi
+    const users = [];
+    const appId = '936619743392459';
+    const cycleDelay = settings.searchCycleDelay || 1500;
+    const pauseDelay = settings.searchCyclePauseDelay || 5000;
+    const maxLimit = settings.maxFollowers || 0; // 0 = sınırsız
+    const queryHash = queryHashCache.follow_followers || '37479f2b8209594dde7facb0d904896a';
+    let endCursor = null;
+    let hasNextPage = true;
+    let cycleCount = 0;
+
+    while (hasNextPage && isRunning && !(maxLimit > 0 && users.length >= maxLimit)) {
+        // Kalan ihtiyaca göre first ayarla
+        const remaining = maxLimit > 0 ? maxLimit - users.length : 50;
+        const pageFirst = Math.min(remaining, 50);
+        const vars = encodeURIComponent(JSON.stringify({ id: userId, first: pageFirst, ...(endCursor ? { after: endCursor } : {}) }));
+        const url = `https://www.instagram.com/graphql/query/?query_hash=${queryHash}&variables=${vars}`;
+
+        let res, data;
+        try {
+            res = await fetch(url, { headers: { 'x-ig-app-id': appId, 'x-csrftoken': csrfToken } });
+            if (res.status === 429) {
+                log('Followers rate limit. 30 saniye bekleniyor...', 'warn');
+                await new Promise(r => setTimeout(r, 30000));
+                continue;
+            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            data = await res.json();
+        } catch (e) {
+            log(`Followers GraphQL hatası: ${e.message}. ${users.length} kişiyle devam ediliyor.`, 'warn');
+            break;
+        }
+
+        const pageData = data?.data?.user?.edge_followed_by;
+        if (!pageData) {
+            log(`Followers GraphQL yanıtı geçersiz (sayfa ${cycleCount+1}). ${users.length} kişiyle devam ediliyor.`, 'warn');
+            break; // null yerine mevcut users'u döndür
+        }
+
+        for (const edge of pageData.edges) {
+            if (maxLimit > 0 && users.length >= maxLimit) break;
+            const u = edge.node;
+            const rawId = u.id || u.pk;
+            if (!rawId) continue;
+            users.push({
+                id: String(rawId),
+                username: u.username || '',
+                is_private: u.is_private || false,
+                profile_pic_url: u.profile_pic_url || ''
+            });
+        }
+
+        hasNextPage = pageData.page_info.has_next_page;
+        endCursor = pageData.page_info.end_cursor;
+        cycleCount++;
+
+        log(`followers listesi çekiliyor... (${users.length} kişi, bu sayfa: ${pageData.edges.length})`, 'info');
+        if (onProgress) onProgress(users.length);
+
+        if (hasNextPage && isRunning && !(maxLimit > 0 && users.length >= maxLimit)) {
+            if (cycleCount % 5 === 0) {
+                log(`5 döngü tamamlandı, ${pauseDelay}ms bekleniyor...`, 'info');
+                await new Promise(r => setTimeout(r, pauseDelay));
+            } else {
+                await new Promise(r => setTimeout(r, cycleDelay + Math.random() * 500));
+            }
+        }
+    }
+    return users;
+}
+
+async function fetchFollowList(userId, type, csrfToken, onProgress, settings = {}) {
     const users = [];
     let nextMaxId = null;
     const appId = '936619743392459';
+    const cycleDelay = settings.searchCycleDelay || 1500;
+    const pauseDelay = settings.searchCyclePauseDelay || 5000;
+    // type'a göre doğru limit al
+    const maxLimit = type === 'following' ? (settings.maxFollowing || 0) : (settings.maxFollowers || 0);
+    let cycleCount = 0;
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
 
     do {
-        let url = `https://www.instagram.com/api/v1/friendships/${userId}/${type}/?count=200`;
+        // Limit dolmuşsa dur
+        if (maxLimit > 0 && users.length >= maxLimit) {
+            log(`${type} limiti (${maxLimit}) doldu, çekme durduruluyor.`, 'info');
+            break;
+        }
+        // Kalan ihtiyaca göre count ayarla (gereksiz veri çekme)
+        const remaining = maxLimit > 0 ? maxLimit - users.length : 200;
+        const pageCount = Math.min(remaining, 200);
+        let url = `https://www.instagram.com/api/v1/friendships/${userId}/${type}/?count=${pageCount}`;
         if (nextMaxId) url += `&max_id=${nextMaxId}`;
 
-        const res = await fetch(url, {
-            headers: {
-                'x-ig-app-id': appId,
-                'x-csrftoken': csrfToken
-            }
-        });
+        let res, data;
+        try {
+            res = await fetch(url, {
+                headers: {
+                    'x-ig-app-id': appId,
+                    'x-csrftoken': csrfToken
+                }
+            });
 
-        if (!res.ok) {
-            throw new Error(`Instagram API hatası (${type}): HTTP ${res.status}`);
+            if (res.status === 429) {
+                log(`Rate limit (${type}). 30 saniye bekleniyor...`, 'warn');
+                await new Promise(resolve => setTimeout(resolve, 30000));
+                continue;
+            }
+
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
+
+            data = await res.json();
+            retryCount = 0;
+        } catch (e) {
+            retryCount++;
+            if (retryCount >= MAX_RETRIES) {
+                log(`${type} listesi çekilirken hata (${e.message}). ${users.length} kişiyle devam ediliyor.`, 'warn');
+                break;
+            }
+            log(`${type} hatası: ${e.message}. Retry ${retryCount}/${MAX_RETRIES}...`, 'warn');
+            await new Promise(resolve => setTimeout(resolve, 3000 * retryCount));
+            continue;
         }
 
-        const data = await res.json();
         const list = data.users || [];
-        list.forEach(u => users.push({
-            id: String(u.pk || u.id),
-            username: u.username,
-            is_private: u.is_private || false,
-            profile_pic_url: u.profile_pic_url || ''
-        }));
+        for (const u of list) {
+            if (maxLimit > 0 && users.length >= maxLimit) break; // limit aşılmasın
+            const rawId = u.pk || u.id || u.user_id;
+            if (!rawId) continue;
+            users.push({
+                id: String(rawId),
+                username: u.username || '',
+                is_private: u.is_private || false,
+                profile_pic_url: u.profile_pic_url || ''
+            });
+        }
         nextMaxId = data.next_max_id || null;
+        cycleCount++;
 
-        log(`${type} listesi çekiliyor... (${users.length} kişi)`, 'info');
+        log(`${type} listesi çekiliyor... (${users.length} kişi, bu sayfa: ${list.length})`, 'info');
         if (onProgress) onProgress(users.length);
 
-        if (nextMaxId && (ignoreStop || isRunning)) {
-            await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
+        if (nextMaxId && isRunning && !(maxLimit > 0 && users.length >= maxLimit)) {
+            if (cycleCount % 5 === 0) {
+                log(`5 döngü tamamlandı, ${pauseDelay}ms bekleniyor...`, 'info');
+                await new Promise(resolve => setTimeout(resolve, pauseDelay));
+            } else {
+                await new Promise(resolve => setTimeout(resolve, cycleDelay + Math.random() * 500));
+            }
         }
-    } while (nextMaxId && (ignoreStop || isRunning));
+    } while (nextMaxId && isRunning && !(maxLimit > 0 && users.length >= maxLimit));
 
     return users;
 }
@@ -259,44 +377,110 @@ async function scanTargetUsers(actionType, settings = {}) {
 
         const csrfToken = getCsrfToken() || '';
 
+        // --- TRACKED MOD: Sadece uygulama ile takip edilenleri kontrol et ---
+        if (actionType === 'unfollow_nonfollowers_tracked') {
+            chrome.storage.local.get(['followedByApp'], async (stored) => {
+                const followedByApp = stored.followedByApp || [];
+                if (followedByApp.length === 0) {
+                    log('⚠️ Takip geçmişi bulunamadı. Önce bu uygulama ile birini takip edin.', 'warn');
+                    isRunning = false;
+                    updateState({ status: 'idle' });
+                    return;
+                }
+
+                log(`Takip geçmişinde ${followedByApp.length} kişi var. Takipçiler çekiliyor...`, 'info');
+                const followers = await fetchFollowersList(userId, csrfToken, null, settings);
+                if (followers === null || followers.length === 0) {
+                    log('Takipçi listesi çekilemedi. Tekrar deneyin.', 'error');
+                    isRunning = false;
+                    updateState({ status: 'idle' });
+                    return;
+                }
+
+                const followerIdSet = new Set(followers.map(u => String(u.id)));
+                const whitelistArr = settings.whitelist ? settings.whitelist.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+
+                // followedByApp içinden geri takip etmeyenleri bul, en yeniden eskiye sırala
+                const sorted = [...followedByApp].sort((a, b) => new Date(b.followedAt) - new Date(a.followedAt));
+                const result = sorted.filter(u => {
+                    if (followerIdSet.has(String(u.id))) return false; // geri takip ediyor
+                    if (whitelistArr.includes(u.username.toLowerCase())) return false;
+                    return true;
+                }).map(u => ({
+                    id: u.id,
+                    username: u.username,
+                    profile_pic_url: u.profile_pic_url || '',
+                    is_private: u.is_private || false,
+                    is_following_back: false,
+                    followedAt: u.followedAt
+                }));
+
+                log(`Tarama tamamlandı. ${result.length} kişi geri takip etmiyor (${followedByApp.length} takipten).`, 'success');
+                isRunning = false;
+                updateState({ status: 'idle', scanned: result.length });
+                chrome.storage.local.set({
+                    nonFollowers: result,
+                    followingList: result,
+                    followersList: followers,
+                    listActionType: 'unfollow_nonfollowers_tracked'
+                }, () => {
+                    chrome.runtime.sendMessage({ type: 'OPEN_LIST_PAGE' });
+                });
+            });
+            return;
+        }
+
         // --- UNFOLLOW NON-FOLLOWERS: V1 API ile following ve followers çek, farkı bul ---
         if (actionType === 'unfollow_nonfollowers' || actionType === 'unfollow_followers' || actionType === 'unfollow_private') {
             log('Takip ettikleriniz çekiliyor...', 'info');
-
-            const following = await fetchFollowList(userId, 'following', csrfToken, null, true);
+            const following = await fetchFollowList(userId, 'following', csrfToken, null, settings);
 
             // unfollow_private için followers listesine gerek yok
             let followers = [];
             if (actionType !== 'unfollow_private') {
-                log(`${following.length} takip edilen bulundu. Şimdi takipçiler çekiliyor...`, 'info');
-                followers = await fetchFollowList(userId, 'followers', csrfToken, null, true);
+                log(`${following.length} takip edilen bulundu. 5 saniye bekleniyor...`, 'info');
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                log('Şimdi takipçiler çekiliyor (GraphQL)...', 'info');
+                followers = await fetchFollowersList(userId, csrfToken, null, settings);
+
+                // GraphQL kısmi veri döndürmüş olabilir, kontrol et
+                if (followers === null || followers.length === 0) {
+                    log('GraphQL başarısız veya boş, V1 API ile deneniyor...', 'warn');
+                    followers = await fetchFollowList(userId, 'followers', csrfToken, null, settings);
+                } else {
+                    log(`GraphQL ile ${followers.length} takipçi çekildi.`, 'info');
+                }
+
                 log(`${followers.length} takipçi bulundu. Liste hesaplanıyor...`, 'info');
             } else {
                 log(`${following.length} takip edilen bulundu. Gizli hesaplar filtreleniyor...`, 'info');
+            }            if (actionType === 'unfollow_private') {
+                // Gizli hesaplar: followers'a gerek yok, direkt following'den filtrele
+                const whitelistArr = settings.whitelist ? settings.whitelist.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+                following.forEach(u => {
+                    if (!u.is_private) return;
+                    if (whitelistArr.includes(u.username.toLowerCase())) return;
+                    nonFollowers.push(u);
+                });
+                updateState({ scanned: nonFollowers.length });
+                log(`Tarama tamamlandı. ${nonFollowers.length} gizli hesap listelendi.`, 'success');
+                isRunning = false;
+                updateState({ status: 'idle' });
+                chrome.storage.local.set({ nonFollowers, followingList: following, followersList: [], listActionType: actionType }, () => {
+                    chrome.runtime.sendMessage({ type: 'OPEN_LIST_PAGE' });
+                });
+                return;
             }
 
-            const followerIds = new Set(followers.map(u => String(u.id)));
-            const whitelistArr = settings.whitelist ? settings.whitelist.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
-            const blacklistArr = settings.blacklist ? settings.blacklist.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
-
-            following.forEach(u => {
-                const isFollowingBack = followerIds.has(String(u.id));
-
-                if (actionType === 'unfollow_nonfollowers' && isFollowingBack) return;
-                if (actionType === 'unfollow_followers' && !isFollowingBack) return;
-                if (actionType === 'unfollow_private' && !u.is_private) return; // Gizli değilse atla
-
-                if (whitelistArr.includes(u.username.toLowerCase())) return;
-                if (blacklistArr.includes(u.username.toLowerCase())) return;
-                nonFollowers.push(u);
-                updateState({ scanned: nonFollowers.length });
-            });
-
-            updateState({ scanned: nonFollowers.length });
-            const stoppedNote = '';
-            log(`Tarama tamamlandı. ${nonFollowers.length} kişi listelendi${stoppedNote}.`, 'success');
+            // unfollow_nonfollowers / unfollow_followers:
+            // Ham listeleri kaydet, hesaplamayı list.js yapacak
+            const totalNonFollowers = following.filter(u => !new Set(followers.map(f => String(f.id))).has(String(u.id))).length;
+            log(`Tarama tamamlandı. ${totalNonFollowers} kişi geri takip etmiyor.`, 'success');
             isRunning = false;
-            updateState({ status: 'idle' });
+            updateState({ status: 'idle', scanned: totalNonFollowers });
+            chrome.storage.local.set({ nonFollowers: following, followingList: following, followersList: followers, listActionType: actionType }, () => {
+                chrome.runtime.sendMessage({ type: 'OPEN_LIST_PAGE' });
+            });
             return;
         }
 
@@ -345,12 +529,13 @@ async function scanTargetUsers(actionType, settings = {}) {
             const shortcode = shortcodeMatch[1];
             log(`Beğenenler çekiliyor (${shortcode})...`, 'info');
 
-            // GraphQL ile beğenenler çek (daha güvenilir)
+            // GraphQL ile beğenenler çek
             queryHash = '1cb6ec562411f7b1d4a2c4a6cdee6db5'; // Likers query hash
             edgePath = 'edge_liked_by';
             varsObj = { shortcode: shortcode, first: 50 };
-            
-            // Fallback: V1 API ile de dene
+
+            // Önce V1 API dene - sayfalama yok ama hızlı (~100 kişi)
+            // Sonra GraphQL ile devam et (sayfalama var, tüm listeyi çeker)
             try {
                 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
                 let mediaId = BigInt(0);
@@ -365,40 +550,39 @@ async function scanTargetUsers(actionType, settings = {}) {
                         'x-csrftoken': getCsrfToken() || ''
                     }
                 });
-                
+
                 if (res.ok) {
                     const data = await res.json();
                     const whitelistArr = settings.whitelist ? settings.whitelist.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
                     const blacklistArr = settings.blacklist ? settings.blacklist.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+                    const seenIds = new Set();
 
                     if (data.users && data.users.length > 0) {
                         data.users.forEach(u => {
                             const username = u.username || 'unknown';
                             const userId = u.pk || u.id;
-                            
-                            if (!userId) {
-                                log(`⚠️ @${username} için ID bulunamadı. Atlanıyor.`, 'warn');
-                                return;
-                            }
-                            
+                            if (!userId) return;
                             if (blacklistArr.includes(username.toLowerCase())) return;
                             if (settings.skipPrivate && u.is_private) return;
                             if (settings.skipNoPic && u.profile_pic_url && u.profile_pic_url.includes('default_v0')) return;
-
-                            nonFollowers.push({ id: userId, username: username });
+                            seenIds.add(String(userId));
+                            nonFollowers.push({ id: userId, username: username, is_private: u.is_private || false, profile_pic_url: u.profile_pic_url || '' });
                         });
                         totalFetched += data.users.length;
+                        updateState({ scanned: nonFollowers.length });
+                        log(`V1 API'den ${data.users.length} beğenen çekildi. GraphQL ile devam ediliyor...`, 'info');
                     }
-                    updateState({ scanned: nonFollowers.length });
-                    hasNextPage = false;
-                    log(`V1 API'den ${data.users?.length || 0} beğenen çekildi`, 'success');
-                    return; // V1 API başarılı, GraphQL'e geçme
+
+                    // V1 sonrası GraphQL ile kalan sayfaları çek (duplicate'leri atla)
+                    // seenIds'i closure'a taşı - GraphQL loop'unda kullanılacak
+                    // varsObj'e özel bir flag ekle
+                    varsObj._seenIds = seenIds;
                 }
             } catch (e) {
-                log(`V1 API hatası: ${e.message}. GraphQL deneniyor...`, 'info');
+                log(`V1 API hatası: ${e.message}. GraphQL ile devam ediliyor...`, 'info');
             }
-            
-            // GraphQL'e devam et
+
+            // GraphQL ile tüm sayfaları çek
             hasNextPage = true;
 
         } else if (actionType === 'follow_commenters') {
@@ -415,6 +599,10 @@ async function scanTargetUsers(actionType, settings = {}) {
         } else {
             throw new Error("Bilinmeyen işlem türü: " + actionType);
         }
+
+        // _seenIds'i varsObj'dan ayır - JSON.stringify'a girmemeli
+        const likerSeenIds = varsObj._seenIds || new Set();
+        delete varsObj._seenIds;
 
         while (hasNextPage && isRunning) {
             if (endCursor) {
@@ -437,7 +625,7 @@ async function scanTargetUsers(actionType, settings = {}) {
 
             // Support both old nested user object and direct node
             let rootNode = null;
-            if (actionType === 'follow_commenters') {
+            if (actionType === 'follow_commenters' || actionType === 'follow_likers') {
                 rootNode = data?.data?.shortcode_media;
             } else {
                 rootNode = data?.data?.user;
@@ -466,11 +654,14 @@ async function scanTargetUsers(actionType, settings = {}) {
                 const username = userNode.username || 'unknown';
                 const userId = userNode.id || userNode.pk;
 
-                // Eğer ID bulunamadıysa, username'den ID çıkarmaya çalış
                 if (!userId) {
                     log(`⚠️ @${username} için ID bulunamadı. Atlanıyor.`, 'warn');
                     return;
                 }
+
+                // V1 API'den zaten eklendiyse atla (sadece follow_likers için)
+                if (actionType === 'follow_likers' && likerSeenIds.has(String(userId))) return;
+                if (actionType === 'follow_likers') likerSeenIds.add(String(userId));
 
                 // Blacklist check (For Follow actions)
                 if (actionType !== 'unfollow_nonfollowers' && blacklistArr.includes(username.toLowerCase())) return;
@@ -482,19 +673,30 @@ async function scanTargetUsers(actionType, settings = {}) {
                 if (settings.skipPrivate && userNode.is_private) return;
                 if (settings.skipNoPic && userNode.profile_pic_url && userNode.profile_pic_url.includes('default_v0')) return;
 
-                nonFollowers.push({ id: userId, username: username });
+                nonFollowers.push({ id: userId, username: username, is_private: userNode.is_private || false, profile_pic_url: userNode.profile_pic_url || '' });
             });
 
             updateState({ scanned: nonFollowers.length });
 
             if (hasNextPage && isRunning) {
-                // Sleep to avoid rate limits
-                await sleep(1500 + Math.random() * 1000);
+                const cycleDelay = settings.searchCycleDelay || 1500;
+                const pauseDelay = settings.searchCyclePauseDelay || 5000;
+                const pageCount = Math.ceil(totalFetched / 50);
+                if (pageCount > 0 && pageCount % 5 === 0) {
+                    log(`5 döngü tamamlandı, ${pauseDelay / 1000}s bekleniyor...`, 'info');
+                    await sleep(pauseDelay);
+                } else {
+                    await sleep(cycleDelay + Math.random() * 500);
+                }
             }
         }
 
         if (isRunning) {
             log(`Tarama tamamlandı. Toplam ${nonFollowers.length} hedef kullanıcı listeye eklendi.`, 'success');
+            // Listeyi storage'a kaydet ve yeni sekmede aç
+            chrome.storage.local.set({ nonFollowers, listActionType: actionType }, () => {
+                chrome.runtime.sendMessage({ type: 'OPEN_LIST_PAGE' });
+            });
         } else {
             log('Tarama kullanıcı tarafından durduruldu.', 'info');
         }
@@ -597,6 +799,11 @@ async function startAction(actionType, settings) {
         }
 
         let processedToday = 0;
+        const isUnfollow = actionType === 'unfollow_nonfollowers' || actionType === 'unfollow_followers' || actionType === 'unfollow_private';
+        const baseDelay = isUnfollow
+            ? (settings.unfollowDelay || 2000)
+            : Math.floor(Math.random() * (settings.maxDelay - settings.minDelay + 1) + settings.minDelay) * 1000;
+        const pauseDelay = settings.unfollowPauseDelay || 10000;
 
         for (let i = 0; i < nonFollowers.length; i++) {
             if (!isRunning) break;
@@ -618,7 +825,7 @@ async function startAction(actionType, settings) {
             }
 
             // For DOM scraper fallback, userId might be a string username
-            if (actionType === 'unfollow_nonfollowers' || actionType === 'unfollow_followers' || actionType === 'unfollow_private') {
+            if (actionType === 'unfollow_nonfollowers' || actionType === 'unfollow_followers' || actionType === 'unfollow_private' || actionType === 'unfollow_nonfollowers_tracked') {
                 endpoint = `https://www.instagram.com/api/v1/friendships/destroy/${userId}/`;
                 actionName = 'Takipten Çıkarma';
             } else {
@@ -654,6 +861,25 @@ async function startAction(actionType, settings) {
                     processedToday++;
                     log(`${actionName} başarılı: @${username} (${processedToday}/${settings.dailyLimit})`, 'success');
                     updateState({ processed: appState.processed + 1 });
+
+                    // Takip işlemiyse geçmişe kaydet
+                    if (actionType !== 'unfollow_nonfollowers' && actionType !== 'unfollow_followers' && actionType !== 'unfollow_private' && actionType !== 'unfollow_nonfollowers_tracked') {
+                        chrome.storage.local.get(['followedByApp'], (stored) => {
+                            const list = stored.followedByApp || [];
+                            // Zaten varsa güncelle, yoksa ekle
+                            const existing = list.findIndex(u => String(u.id) === String(userId));
+                            const entry = { id: String(userId), username, followedAt: new Date().toISOString() };
+                            if (existing >= 0) list[existing] = entry; else list.push(entry);
+                            chrome.storage.local.set({ followedByApp: list });
+                        });
+                    }
+                    // Tracked modda unfollow edilince geçmişten de çıkar
+                    if (actionType === 'unfollow_nonfollowers_tracked') {
+                        chrome.storage.local.get(['followedByApp'], (stored) => {
+                            const list = (stored.followedByApp || []).filter(u => String(u.id) !== String(userId));
+                            chrome.storage.local.set({ followedByApp: list });
+                        });
+                    }
                 } else {
                     log(`${actionName} başarısız: @${username} (ID: ${userId}, HTTP ${res.status})`, 'error');
                     if (res.status === 429) {
@@ -681,8 +907,20 @@ async function startAction(actionType, settings) {
 
             // Anti-ban random delay
             if (i < nonFollowers.length - 1 && isRunning) {
-                const delay = Math.floor(Math.random() * (settings.maxDelay - settings.minDelay + 1) + settings.minDelay) * 1000;
-                log(`${(delay / 1000).toFixed(1)} saniye bekleniyor...`, 'info');
+                let delay;
+                if (isUnfollow) {
+                    // Her 5 işlemde bir uzun mola
+                    if ((processedToday > 0) && (processedToday % 5 === 0)) {
+                        delay = pauseDelay;
+                        log(`5 işlem tamamlandı, ${(delay / 1000).toFixed(1)} saniye bekleniyor...`, 'info');
+                    } else {
+                        delay = baseDelay + Math.floor(Math.random() * 500);
+                        log(`${(delay / 1000).toFixed(1)} saniye bekleniyor...`, 'info');
+                    }
+                } else {
+                    delay = Math.floor(Math.random() * (settings.maxDelay - settings.minDelay + 1) + settings.minDelay) * 1000;
+                    log(`${(delay / 1000).toFixed(1)} saniye bekleniyor...`, 'info');
+                }
                 await sleep(delay);
             }
         }
@@ -716,6 +954,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             log(`Hash güncelleme hatası: ${e.message}`, 'error');
             sendResponse({ success: false, error: e.message });
         });
-        return true; // Async response için gerekli
+        return true;
     }
 });

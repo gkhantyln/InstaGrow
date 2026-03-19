@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>InstaGrow - Kullanıcı Listesi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #1a1d24;
+      --border: #2a2d36;
+      --text: #ffffff;
+      --muted: #8b92a5;
+      --accent: #bc1888;
+      --accent-hover: #d21c97;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --match: rgba(16,185,129,0.12);
+      --match-border: rgba(16,185,129,0.4);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: #13151c; border-bottom: 1px solid var(--border);
+      padding: 12px 24px; display: flex; align-items: center;
+      justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .logo {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 16px; font-weight: 700;
+      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .badge {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--muted);
+    }
+    .badge span { color: var(--text); font-weight: 600; }
+    .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border: none; border-radius: 6px;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; color: white;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-success { background: var(--success); }
+    .btn-success:hover:not(:disabled) { background: #059669; }
+    .btn-danger { background: var(--danger); }
+    .btn-danger:hover:not(:disabled) { background: var(--danger-hover); }
+    .btn-secondary { background: var(--panel); border: 1px solid var(--border); }
+    .btn-secondary:hover:not(:disabled) { background: #242730; }
+    .btn-warning { background: var(--warning); color: #111; }
+    .btn-warning:hover:not(:disabled) { background: #d97706; }
+
+    /* Tab switcher */
+    .view-tabs {
+      display: flex; gap: 4px;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 4px;
+    }
+    .view-tab {
+      padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 500;
+      cursor: pointer; border: none; background: none; color: var(--muted);
+      font-family: inherit; transition: all 0.2s;
+    }
+    .view-tab.active { background: var(--accent); color: white; }
+
+    /* Dual panel layout */
+    .dual-panel {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0; height: calc(100vh - 110px);
+    }
+    .panel {
+      display: flex; flex-direction: column;
+      border-right: 1px solid var(--border); overflow: hidden;
+    }
+    .panel:last-child { border-right: none; }
+    .panel-header {
+      padding: 10px 16px; background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .panel-title { font-size: 13px; font-weight: 600; }
+    .panel-title .count { color: var(--muted); font-weight: 400; margin-left: 6px; }
+    .panel-search {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 5px 10px; border-radius: 6px; font-family: inherit; font-size: 12px;
+      width: 150px; outline: none;
+    }
+    .panel-search:focus { border-color: var(--accent); }
+    .panel-list { overflow-y: auto; flex: 1; }
+
+    /* User row */
+    .user-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 16px; border-bottom: 1px solid var(--border);
+      transition: background 0.15s; cursor: default;
+    }
+    .user-row:hover { background: rgba(255,255,255,0.03); }
+    .user-row.matched {
+      background: var(--match);
+      border-left: 3px solid var(--success);
+    }
+    .user-row.matched:hover { background: rgba(16,185,129,0.18); }
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      object-fit: cover; background: var(--border); flex-shrink: 0;
+    }
+    .avatar-placeholder {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--border); display: flex; align-items: center;
+      justify-content: center; font-size: 13px; color: var(--muted); flex-shrink: 0;
+    }
+    .user-info { flex: 1; min-width: 0; }
+    .user-name {
+      font-size: 13px; font-weight: 500; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .user-name a { color: var(--text); text-decoration: none; }
+    .user-name a:hover { color: var(--accent); }
+    .user-id { font-size: 11px; color: var(--muted); font-family: monospace; }
+    .match-badge {
+      font-size: 10px; padding: 2px 7px; border-radius: 10px; flex-shrink: 0;
+      background: rgba(16,185,129,0.2); color: var(--success);
+      border: 1px solid rgba(16,185,129,0.3); font-weight: 600;
+    }
+    .num { font-size: 11px; color: var(--muted); width: 24px; text-align: right; flex-shrink: 0; }
+
+    /* Single list view */
+    .single-panel { display: none; height: calc(100vh - 110px); flex-direction: column; }
+    .single-panel.active { display: flex; }
+    .dual-panel.hidden { display: none; }
+
+    .toolbar {
+      padding: 10px 24px; display: flex; align-items: center; gap: 10px;
+      flex-wrap: wrap; border-bottom: 1px solid var(--border); background: var(--panel);
+    }
+    .search-input {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 7px 12px; border-radius: 6px; font-family: inherit; font-size: 13px;
+      width: 200px; outline: none;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .filter-select {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 7px 10px; border-radius: 6px; font-family: inherit; font-size: 13px;
+      outline: none; cursor: pointer;
+    }
+    .select-info { margin-left: auto; font-size: 12px; color: var(--muted); }
+    .select-info span { color: var(--warning); font-weight: 600; }
+
+    .table-wrap { padding: 0 24px 16px; overflow-x: auto; flex: 1; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: var(--panel); color: var(--muted); font-weight: 500;
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border);
+      white-space: nowrap; cursor: pointer; user-select: none; position: sticky; top: 0;
+    }
+    thead th:hover { color: var(--text); }
+    thead th.sorted { color: var(--accent); }
+    thead th input[type="checkbox"], tbody td input[type="checkbox"] {
+      accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+    tbody tr.selected { background: rgba(188,24,136,0.08); }
+    tbody tr.excluded { opacity: 0.4; }
+    tbody td { padding: 10px 12px; vertical-align: middle; }
+    .tag {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 500;
+    }
+    .tag-private { background: rgba(245,158,11,0.15); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
+    .tag-public { background: rgba(16,185,129,0.1); color: var(--success); border: 1px solid rgba(16,185,129,0.25); }
+    .tag-nopic { background: rgba(139,146,165,0.15); color: var(--muted); border: 1px solid var(--border); }
+    .username-cell { display: flex; align-items: center; gap: 10px; }
+    .username-link { color: var(--text); text-decoration: none; font-weight: 500; }
+    .username-link:hover { color: var(--accent); text-decoration: underline; }
+    .note-input {
+      background: transparent; border: 1px solid transparent; color: var(--text);
+      padding: 4px 8px; border-radius: 4px; font-family: inherit; font-size: 12px;
+      width: 130px; outline: none; transition: border 0.2s;
+    }
+    .note-input:focus { border-color: var(--accent); background: var(--bg); }
+    .note-input::placeholder { color: var(--muted); }
+    .exclude-btn {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .exclude-btn:hover { border-color: var(--danger); color: var(--danger); }
+    .exclude-btn.excluded { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,0.1); }
+    .remove-btn {
+      background: none; border: 1px solid transparent; color: var(--muted);
+      padding: 4px 8px; border-radius: 4px; font-size: 13px; cursor: pointer;
+      transition: all 0.2s; font-family: inherit; line-height: 1;
+    }
+    .remove-btn:hover { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,0.1); }
+
+    .empty-state { text-align: center; padding: 60px 24px; color: var(--muted); }
+    .empty-state p { font-size: 15px; margin-bottom: 8px; color: var(--text); }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; background: var(--panel);
+      border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px;
+      font-size: 13px; display: flex; align-items: center; gap: 8px;
+      z-index: 999; animation: slideUp 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .toast.success { border-color: var(--success); color: var(--success); }
+    .toast.error { border-color: var(--danger); color: var(--danger); }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .action-type-label {
+      font-size: 12px; color: var(--muted); padding: 4px 10px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+    }
+    .action-type-label span { color: var(--accent); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="2">
+        <defs>
+          <linearGradient id="g" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#f09433"/>
+            <stop offset="100%" stop-color="#bc1888"/>
+          </linearGradient>
+        </defs>
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+      InstaGrow
+    </div>
+    <div class="badge">Toplam: <span id="totalCount">0</span></div>
+    <div class="badge">Seçili: <span id="selectedCount">0</span></div>
+    <div class="badge">Hariç: <span id="excludedCount">0</span></div>
+    <div class="action-type-label" id="actionTypeLabel">İşlem: <span>-</span></div>
+  </div>
+  <div class="topbar-right">
+    <div class="view-tabs">
+      <button class="view-tab active" id="tabDual">⚖️ Karşılaştır</button>
+      <button class="view-tab" id="tabList">📋 Liste</button>
+    </div>
+    <button class="btn btn-secondary" id="selectAllBtn">Tümünü Seç</button>
+    <button class="btn btn-secondary" id="deselectAllBtn">Seçimi Kaldır</button>
+    <button class="btn btn-danger" id="removeSelectedBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      Seçilenleri Kaldır
+    </button>
+    <button class="btn btn-warning" id="saveBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Kaydet
+    </button>
+    <button class="btn btn-secondary" id="exportCsvBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      CSV İndir
+    </button>
+    <button class="btn btn-secondary" id="exportTxtBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16h16V8l-6-6z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      TXT İndir
+    </button>
+    <button class="btn btn-secondary" id="exportJsonBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16h16V8l-6-6z"/><polyline points="14 2 14 8 20 8"/></svg>
+      JSON İndir
+    </button>
+    <button class="btn btn-danger" id="clearLogsBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      Geçmişi Sil
+    </button>
+    <button class="btn btn-success" id="startActionBtn" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      İşlemi Başlat
+    </button>
+  </div>
+</div>
+
+<!-- DUAL PANEL VIEW -->
+<div class="dual-panel" id="dualView">
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        📤 Takip Ettiklerin <span class="count" id="followingCount">(0)</span>
+        <span style="font-size:11px;color:var(--success);margin-left:8px;">🟢 = Seni takip ediyor</span>
+      </div>
+      <input type="text" class="panel-search" id="searchFollowing" placeholder="Ara...">
+    </div>
+    <div class="panel-list" id="followingList"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        📥 Takipçilerin <span class="count" id="followersCount">(0)</span>
+      </div>
+      <input type="text" class="panel-search" id="searchFollowers" placeholder="Ara...">
+    </div>
+    <div class="panel-list" id="followersList"></div>
+  </div>
+</div>
+
+<!-- SINGLE LIST VIEW -->
+<div class="single-panel" id="listView">
+  <div class="toolbar">
+    <input type="text" class="search-input" id="searchInput" placeholder="Kullanıcı adı ara...">
+    <select class="filter-select" id="filterPrivate">
+      <option value="all">Tüm Hesaplar</option>
+      <option value="private">Sadece Gizli</option>
+      <option value="public">Sadece Açık</option>
+    </select>
+    <select class="filter-select" id="filterFollowBack">
+      <option value="all">Geri Takip: Hepsi</option>
+      <option value="yes">Geri Takip Ediyor</option>
+      <option value="no">Geri Takip Etmiyor</option>
+    </select>
+    <select class="filter-select" id="filterExcluded">
+      <option value="all">Hariç Tutulanlar Dahil</option>
+      <option value="active">Hariç Tutulanları Gizle</option>
+      <option value="excluded">Sadece Hariç Tutulanlar</option>
+    </select>
+    <div class="select-info">Görünen: <span id="visibleCount">0</span></div>
+  </div>
+  <div class="table-wrap">
+    <div id="emptyState" class="empty-state" style="display:none;">
+      <p>Liste boş</p>
+      <small>Önce popup'tan bir tarama başlatın.</small>
+    </div>
+    <table id="userTable">
+      <thead>
+        <tr>
+          <th style="width:36px"><input type="checkbox" id="checkAll"></th>
+          <th style="width:36px">#</th>
+          <th style="width:48px"></th>
+          <th data-sort="username">Kullanıcı Adı ↕</th>
+          <th data-sort="id" style="font-family:monospace;font-size:11px">ID ↕</th>
+          <th data-sort="is_private">Hesap ↕</th>
+          <th data-sort="is_following_back">Geri Takip ↕</th>
+          <th data-sort="followedAt" id="thFollowedAt" style="display:none">Takip Tarihi ↕</th>
+          <th style="width:100px">Not</th>
+          <th style="width:80px">Hariç Tut</th>
+          <th style="width:36px"></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="list.js"></script>
+</body>
+</html>

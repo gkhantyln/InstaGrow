@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InstaGrow — Kullanım Kılavuzu</title>
+  <meta name="description" content="InstaGrow kullanım kılavuzu. Adım adım talimatlar, ipuçları ve ileri seviye kullanım.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0b0f; --bg2: #111318; --bg3: #1a1d26;
+      --border: #23263a; --text: #f0f2ff; --muted: #7b82a0;
+      --accent: #bc1888; --accent2: #f09433;
+      --grad: linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+      --card-bg: #13151f; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+    }
+    [data-theme="light"] {
+      --bg:#f5f6fa; --bg2:#fff; --bg3:#eef0f8; --border:#dde0f0;
+      --text:#0d0f1a; --muted:#6b7280; --card-bg:#fff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
+    a{text-decoration:none;color:inherit;}
+
+    /* NAV */
+    nav{
+      position:fixed;top:0;left:0;right:0;z-index:100;
+      background:rgba(10,11,15,0.88);backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border);
+      padding:0 24px;height:64px;
+      display:flex;align-items:center;justify-content:space-between;
+      transition:background 0.3s;
+    }
+    [data-theme="light"] nav{background:rgba(245,246,250,0.92);}
+    .nav-logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:700;
+      background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .nav-right{display:flex;align-items:center;gap:10px;}
+    .nav-back{display:inline-flex;align-items:center;gap:6px;
+      background:var(--bg3);border:1px solid var(--border);color:var(--muted);
+      padding:7px 14px;border-radius:20px;font-size:13px;font-weight:500;
+      transition:all 0.2s;cursor:pointer;}
+    .nav-back:hover{color:var(--text);border-color:var(--accent);}
+    .lang-btn,.theme-btn{background:var(--bg3);border:1px solid var(--border);
+      color:var(--muted);padding:6px 14px;border-radius:20px;
+      font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all 0.2s;}
+    .theme-btn{width:38px;height:38px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;}
+    .lang-btn:hover,.theme-btn:hover{color:var(--text);border-color:var(--accent);}
+
+    /* LAYOUT */
+    body{padding-top:64px;}
+    .layout{display:grid;grid-template-columns:260px 1fr;gap:0;min-height:calc(100vh - 64px);}
+    @media(max-width:900px){.layout{grid-template-columns:1fr;} .sidebar{display:none;}}
+
+    /* SIDEBAR */
+    .sidebar{
+      position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;
+      border-right:1px solid var(--border);padding:24px 0;
+      background:var(--bg2);
+    }
+    .sidebar::-webkit-scrollbar{width:4px;}
+    .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+    .sidebar-section{margin-bottom:8px;}
+    .sidebar-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+      color:var(--muted);padding:8px 20px 4px;}
+    .sidebar-link{display:flex;align-items:center;gap:8px;
+      padding:8px 20px;font-size:13px;color:var(--muted);
+      border-left:2px solid transparent;transition:all 0.15s;cursor:pointer;}
+    .sidebar-link:hover{color:var(--text);background:var(--bg3);}
+    .sidebar-link.active{color:var(--accent);border-left-color:var(--accent);background:rgba(188,24,136,0.06);}
+    .sidebar-link .icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+
+    /* CONTENT */
+    .content{padding:48px 56px 80px;max-width:860px;}
+    @media(max-width:1100px){.content{padding:32px 28px 60px;}}
+
+    /* HERO */
+    .guide-hero{margin-bottom:48px;}
+    .guide-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+      color:var(--accent);margin-bottom:10px;}
+    .guide-title{font-size:clamp(1.8rem,3vw,2.6rem);font-weight:800;line-height:1.2;margin-bottom:12px;}
+    .guide-title .grad{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .guide-sub{color:var(--muted);font-size:1rem;max-width:580px;}
+
+    /* SECTION */
+    .guide-section{margin-bottom:56px;scroll-margin-top:80px;}
+    .section-num{display:inline-flex;align-items:center;justify-content:center;
+      width:32px;height:32px;border-radius:50%;
+      background:var(--grad);color:white;font-weight:700;font-size:14px;
+      flex-shrink:0;margin-right:12px;}
+    .section-header{display:flex;align-items:center;margin-bottom:20px;}
+    .section-title{font-size:1.25rem;font-weight:700;}
+    .section-desc{color:var(--muted);font-size:14px;margin-bottom:20px;line-height:1.7;}
+
+    /* CARDS */
+    .card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;}
+    .card-title{font-size:14px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+    .card-body{font-size:13px;color:var(--muted);line-height:1.7;}
+    .card-body strong{color:var(--text);}
+    .card.highlight{border-color:rgba(188,24,136,0.35);background:rgba(188,24,136,0.05);}
+    .card.warning{border-color:rgba(245,158,11,0.35);background:rgba(245,158,11,0.05);}
+    .card.success{border-color:rgba(16,185,129,0.35);background:rgba(16,185,129,0.05);}
+    .card.danger{border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.05);}
+
+    /* STEPS */
+    .steps{display:flex;flex-direction:column;gap:0;position:relative;}
+    .steps::before{content:'';position:absolute;left:19px;top:0;bottom:0;width:2px;background:var(--border);}
+    .step{display:flex;gap:20px;padding-bottom:28px;position:relative;}
+    .step-dot{width:40px;height:40px;border-radius:50%;flex-shrink:0;
+      background:var(--grad);display:flex;align-items:center;justify-content:center;
+      font-weight:700;font-size:14px;color:white;position:relative;z-index:1;}
+    .step-body{padding-top:8px;flex:1;}
+    .step-title{font-size:14px;font-weight:600;margin-bottom:6px;}
+    .step-desc{font-size:13px;color:var(--muted);line-height:1.7;}
+    .step-desc strong{color:var(--text);}
+
+    /* TABLE */
+    .guide-table{width:100%;border-collapse:collapse;font-size:13px;margin:16px 0;}
+    .guide-table th{background:var(--bg3);color:var(--muted);font-weight:600;font-size:11px;
+      text-transform:uppercase;letter-spacing:0.5px;padding:10px 14px;text-align:left;
+      border-bottom:1px solid var(--border);}
+    .guide-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--muted);}
+    .guide-table td:first-child{color:var(--text);font-weight:500;}
+    .guide-table tr:last-child td{border-bottom:none;}
+
+    /* TAGS */
+    .tag{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;}
+    .tag-green{background:rgba(16,185,129,0.12);color:var(--success);border:1px solid rgba(16,185,129,0.25);}
+    .tag-yellow{background:rgba(245,158,11,0.12);color:var(--warning);border:1px solid rgba(245,158,11,0.25);}
+    .tag-red{background:rgba(239,68,68,0.12);color:var(--danger);border:1px solid rgba(239,68,68,0.25);}
+    .tag-purple{background:rgba(188,24,136,0.12);color:#e879c8;border:1px solid rgba(188,24,136,0.25);}
+
+    /* CALLOUT */
+    .callout{display:flex;gap:12px;padding:16px 18px;border-radius:10px;margin:16px 0;font-size:13px;line-height:1.7;}
+    .callout.info{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);color:#93c5fd;}
+    .callout.warn{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);color:#fcd34d;}
+    .callout.tip{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);color:#6ee7b7;}
+    .callout.danger{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#fca5a5;}
+    .callout-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+    .callout strong{color:var(--text);}
+
+    /* CODE */
+    .code{background:var(--bg);border:1px solid var(--border);border-radius:8px;
+      padding:12px 16px;font-family:monospace;font-size:12px;color:#e879c8;margin:10px 0;}
+
+    /* DIVIDER */
+    hr{border:none;border-top:1px solid var(--border);margin:40px 0;}
+
+    /* TOC MOBILE */
+    .toc-mobile{display:none;background:var(--card-bg);border:1px solid var(--border);
+      border-radius:12px;padding:16px;margin-bottom:32px;}
+    @media(max-width:900px){.toc-mobile{display:block;}}
+    .toc-mobile summary{font-size:14px;font-weight:600;cursor:pointer;list-style:none;
+      display:flex;align-items:center;justify-content:space-between;}
+    .toc-mobile summary::after{content:'▼';font-size:11px;color:var(--muted);}
+    .toc-mobile a{display:block;padding:6px 0;font-size:13px;color:var(--muted);border-bottom:1px solid var(--border);}
+    .toc-mobile a:last-child{border-bottom:none;}
+    .toc-mobile a:hover{color:var(--accent);}
+
+    /* FOOTER */
+    footer{border-top:1px solid var(--border);padding:48px 24px 32px;text-align:center;background:var(--bg2);}
+    .footer-logo{display:inline-flex;align-items:center;gap:10px;font-size:17px;font-weight:700;
+      background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+      margin-bottom:20px;text-decoration:none;}
+    .footer-social{display:flex;gap:14px;justify-content:center;margin-bottom:20px;}
+    .social-icon{width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);
+      display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all 0.2s;}
+    .social-icon:hover{border-color:var(--accent);color:var(--accent);}
+    .footer-links{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;}
+    .footer-links a{color:var(--muted);font-size:13px;transition:color 0.2s;}
+    .footer-links a:hover{color:var(--accent);}
+    footer p{font-size:13px;color:var(--muted);}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <a href="index.html" style="display:flex;align-items:center;gap:10px;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-size:17px;font-weight:700;">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="url(#gg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <defs><linearGradient id="gg" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f09433"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs>
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+    InstaGrow
+    </a>
+  </div>
+  <div class="nav-right">
+    <a class="nav-back" href="index.html">← <span data-tr="Ana Sayfa" data-en="Home">Ana Sayfa</span></a>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">🌐 EN</button>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+  </div>
+</nav>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label" data-tr="BAŞLANGIÇ" data-en="GETTING STARTED">BAŞLANGIÇ</div>
+      <a class="sidebar-link active" href="#kurulum" onclick="setActive(this)"><span class="icon">⚙️</span><span data-tr="Kurulum" data-en="Installation">Kurulum</span></a>
+      <a class="sidebar-link" href="#ilk-adim" onclick="setActive(this)"><span class="icon">🚀</span><span data-tr="İlk Adım" data-en="First Steps">İlk Adım</span></a>
+      <a class="sidebar-link" href="#popup" onclick="setActive(this)"><span class="icon">🖥️</span><span data-tr="Popup Arayüzü" data-en="Popup Interface">Popup Arayüzü</span></a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label" data-tr="İŞLEM MODLARı" data-en="ACTION MODES">İŞLEM MODLARI</div>
+      <a class="sidebar-link" href="#takip" onclick="setActive(this)"><span class="icon">➕</span><span data-tr="Takip İşlemleri" data-en="Follow Actions">Takip İşlemleri</span></a>
+      <a class="sidebar-link" href="#unfollow" onclick="setActive(this)"><span class="icon">➖</span><span data-tr="Takipten Çıkarma" data-en="Unfollow Actions">Takipten Çıkarma</span></a>
+      <a class="sidebar-link" href="#gonderi" onclick="setActive(this)"><span class="icon">📸</span><span data-tr="Gönderi İşlemleri" data-en="Post Actions">Gönderi İşlemleri</span></a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label" data-tr="LİSTE SAYFASI" data-en="LIST PAGE">LİSTE SAYFASI</div>
+      <a class="sidebar-link" href="#liste" onclick="setActive(this)"><span class="icon">📋</span><span data-tr="Liste Kullanımı" data-en="List Usage">Liste Kullanımı</span></a>
+      <a class="sidebar-link" href="#export" onclick="setActive(this)"><span class="icon">📤</span><span data-tr="Dışa Aktarma" data-en="Export">Dışa Aktarma</span></a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label" data-tr="GELİŞMİŞ" data-en="ADVANCED">GELİŞMİŞ</div>
+      <a class="sidebar-link" href="#filtreler" onclick="setActive(this)"><span class="icon">🔍</span><span data-tr="Filtreler & Listeler" data-en="Filters & Lists">Filtreler & Listeler</span></a>
+      <a class="sidebar-link" href="#otomasyon" onclick="setActive(this)"><span class="icon">🤖</span><span data-tr="Otomasyon" data-en="Automation">Otomasyon</span></a>
+      <a class="sidebar-link" href="#limitler" onclick="setActive(this)"><span class="icon">⚙️</span><span data-tr="Limit Ayarları" data-en="Limit Settings">Limit Ayarları</span></a>
+      <a class="sidebar-link" href="#hash" onclick="setActive(this)"><span class="icon">🔑</span><span data-tr="Hash Sistemi" data-en="Hash System">Hash Sistemi</span></a>
+      <a class="sidebar-link" href="#tracked" onclick="setActive(this)"><span class="icon">🕐</span><span data-tr="Takip Geçmişi" data-en="Follow History">Takip Geçmişi</span></a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label" data-tr="İPUÇLARI" data-en="TIPS">İPUÇLARI</div>
+      <a class="sidebar-link" href="#strateji" onclick="setActive(this)"><span class="icon">🎯</span><span data-tr="Büyüme Stratejisi" data-en="Growth Strategy">Büyüme Stratejisi</span></a>
+      <a class="sidebar-link" href="#guvenlik" onclick="setActive(this)"><span class="icon">🛡️</span><span data-tr="Güvenli Kullanım" data-en="Safe Usage">Güvenli Kullanım</span></a>
+      <a class="sidebar-link" href="#sorun" onclick="setActive(this)"><span class="icon">🔧</span><span data-tr="Sorun Giderme" data-en="Troubleshooting">Sorun Giderme</span></a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="content">
+
+    <!-- MOBILE TOC -->
+    <details class="toc-mobile">
+      <summary data-tr="📖 İçindekiler" data-en="📖 Table of Contents">📖 İçindekiler</summary>
+      <a href="#kurulum" data-tr="⚙️ Kurulum" data-en="⚙️ Installation">⚙️ Kurulum</a>
+      <a href="#ilk-adim" data-tr="🚀 İlk Adım" data-en="🚀 First Steps">🚀 İlk Adım</a>
+      <a href="#popup" data-tr="🖥️ Popup Arayüzü" data-en="🖥️ Popup Interface">🖥️ Popup Arayüzü</a>
+      <a href="#takip" data-tr="➕ Takip İşlemleri" data-en="➕ Follow Actions">➕ Takip İşlemleri</a>
+      <a href="#unfollow" data-tr="➖ Takipten Çıkarma" data-en="➖ Unfollow Actions">➖ Takipten Çıkarma</a>
+      <a href="#gonderi" data-tr="📸 Gönderi İşlemleri" data-en="📸 Post Actions">📸 Gönderi İşlemleri</a>
+      <a href="#liste" data-tr="📋 Liste Kullanımı" data-en="📋 List Usage">📋 Liste Kullanımı</a>
+      <a href="#filtreler" data-tr="🔍 Filtreler" data-en="🔍 Filters">🔍 Filtreler</a>
+      <a href="#otomasyon" data-tr="🤖 Otomasyon" data-en="🤖 Automation">🤖 Otomasyon</a>
+      <a href="#limitler" data-tr="⚙️ Limit Ayarları" data-en="⚙️ Limit Settings">⚙️ Limit Ayarları</a>
+      <a href="#strateji" data-tr="🎯 Büyüme Stratejisi" data-en="🎯 Growth Strategy">🎯 Büyüme Stratejisi</a>
+      <a href="#guvenlik" data-tr="🛡️ Güvenli Kullanım" data-en="🛡️ Safe Usage">🛡️ Güvenli Kullanım</a>
+      <a href="#sorun" data-tr="🔧 Sorun Giderme" data-en="🔧 Troubleshooting">🔧 Sorun Giderme</a>
+    </details>
+
+    <!-- HERO -->
+    <div class="guide-hero">
+      <div class="guide-tag" data-tr="KULLANIM KILAVUZU" data-en="USER GUIDE">KULLANIM KILAVUZU</div>
+      <h1 class="guide-title"><span class="grad" data-tr="Adım Adım" data-en="Step by Step">Adım Adım</span><br><span data-tr="Tam Kullanım Rehberi" data-en="Complete Usage Guide">Tam Kullanım Rehberi</span></h1>
+      <p class="guide-sub" data-tr="Hiç bilmeyenden ileri seviyeye. Her özelliği, her ayarı, her senaryoyu bu sayfada bulacaksın." data-en="From beginner to advanced. Every feature, every setting, every scenario — all on this page.">Hiç bilmeyenden ileri seviyeye. Her özelliği, her ayarı, her senaryoyu bu sayfada bulacaksın.</p>
+    </div>
+
+    <!-- 1. KURULUM -->
+    <section class="guide-section" id="kurulum">
+      <div class="section-header">
+        <span class="section-num">1</span>
+        <h2 class="section-title" data-tr="Kurulum" data-en="Installation">Kurulum</h2>
+      </div>
+      <p class="section-desc" data-tr="InstaGrow, Chrome Web Store'da değil. GitHub'dan indirip geliştirici modunda yüklüyorsun. 2 dakika sürer." data-en="InstaGrow is not on the Chrome Web Store. Download from GitHub and load in developer mode. Takes 2 minutes.">InstaGrow, Chrome Web Store'da değil. GitHub'dan indirip geliştirici modunda yüklüyorsun. 2 dakika sürer.</p>
+      <div class="steps">
+        <div class="step"><div class="step-dot">1</div><div class="step-body"><div class="step-title" data-tr="GitHub'dan ZIP indir" data-en="Download ZIP from GitHub">GitHub'dan ZIP indir</div><div class="step-desc" data-tr="<a href='https://github.com/gkhantyln/instagrow' target='_blank' style='color:var(--accent)'>github.com/gkhantyln/instagrow</a> adresine git → <strong>Code → Download ZIP</strong> butonuna tıkla → ZIP'i bir klasöre çıkart." data-en="Go to <a href='https://github.com/gkhantyln/instagrow' target='_blank' style='color:var(--accent)'>github.com/gkhantyln/instagrow</a> → Click <strong>Code → Download ZIP</strong> → Extract to a folder."><a href='https://github.com/gkhantyln/instagrow' target='_blank' style='color:var(--accent)'>github.com/gkhantyln/instagrow</a> adresine git → <strong>Code → Download ZIP</strong> butonuna tıkla → ZIP'i bir klasöre çıkart.</div></div></div>
+        <div class="step"><div class="step-dot">2</div><div class="step-body"><div class="step-title" data-tr="Chrome'da Geliştirici Modu'nu aç" data-en="Enable Developer Mode in Chrome">Chrome'da Geliştirici Modu'nu aç</div><div class="step-desc">Chrome adres çubuğuna yaz: <div class="code">chrome://extensions/</div><span data-tr="Sağ üst köşedeki <strong>Geliştirici modu</strong> toggle'ını aç." data-en="Enable the <strong>Developer mode</strong> toggle in the top right corner.">Sağ üst köşedeki <strong>Geliştirici modu</strong> toggle'ını aç.</span></div></div></div>
+        <div class="step"><div class="step-dot">3</div><div class="step-body"><div class="step-title" data-tr="Eklentiyi yükle" data-en="Load the extension">Eklentiyi yükle</div><div class="step-desc" data-tr="<strong>Paketlenmemiş öğe yükle</strong> butonuna tıkla → İndirdiğin klasördeki <strong>extension</strong> alt klasörünü seç → Tamam." data-en="Click <strong>Load unpacked</strong> → Select the <strong>extension</strong> subfolder from the downloaded folder → OK."><strong>Paketlenmemiş öğe yükle</strong> butonuna tıkla → İndirdiğin klasördeki <strong>extension</strong> alt klasörünü seç → Tamam.</div></div></div>
+        <div class="step"><div class="step-dot">4</div><div class="step-body"><div class="step-title" data-tr="Sabitle ve hazır!" data-en="Pin and ready!">Sabitle ve hazır!</div><div class="step-desc" data-tr="Chrome araç çubuğundaki puzzle ikonuna tıkla → InstaGrow'un yanındaki <strong>📌 iğne</strong> ikonuna bas → Eklenti her zaman görünür olur." data-en="Click the puzzle icon in Chrome toolbar → Press the <strong>📌 pin</strong> icon next to InstaGrow → Extension is always visible.">Chrome araç çubuğundaki puzzle ikonuna tıkla → InstaGrow'un yanındaki <strong>📌 iğne</strong> ikonuna bas → Eklenti her zaman görünür olur.</div></div></div>
+      </div>
+      <div class="callout warn"><span class="callout-icon">⚠️</span><span data-tr="<strong>Önemli:</strong> Eklentiyi güncellemek için yeni ZIP'i indir, eski klasörün içeriğini değiştir ve chrome://extensions/ sayfasında <strong>Yenile</strong> ikonuna bas." data-en="<strong>Important:</strong> To update the extension, download the new ZIP, replace the old folder contents, and press the <strong>Refresh</strong> icon on chrome://extensions/."><strong>Önemli:</strong> Eklentiyi güncellemek için yeni ZIP'i indir, eski klasörün içeriğini değiştir ve chrome://extensions/ sayfasında <strong>Yenile</strong> ikonuna bas.</span></div>
+    </section>
+
+    <hr>
+
+    <!-- 2. İLK ADIM -->
+    <section class="guide-section" id="ilk-adim">
+      <div class="section-header"><span class="section-num">2</span><h2 class="section-title" data-tr="İlk Adım — Genel Akış" data-en="First Steps — General Flow">İlk Adım — Genel Akış</h2></div>
+      <p class="section-desc" data-tr="InstaGrow'un çalışma mantığı 3 aşamadan oluşur. Bunu anlarsan her şey netleşir." data-en="InstaGrow works in 3 phases. Understand this and everything becomes clear.">InstaGrow'un çalışma mantığı 3 aşamadan oluşur. Bunu anlarsan her şey netleşir.</p>
+      <div class="card highlight">
+        <div class="card-title">🔄 <span data-tr="Temel Akış" data-en="Core Flow">Temel Akış</span></div>
+        <div class="card-body">
+          <strong data-tr="1. TARA" data-en="1. SCAN">1. TARA</strong> → <span data-tr="Popup'tan işlem seç ve 'Hedefleri Tara' butonuna bas. Instagram API'den kullanıcı listesi çekilir." data-en="Select action from popup and press 'Scan Targets'. User list is fetched from Instagram API.">Popup'tan işlem seç ve 'Hedefleri Tara' butonuna bas. Instagram API'den kullanıcı listesi çekilir.</span><br><br>
+          <strong data-tr="2. İNCELE" data-en="2. REVIEW">2. İNCELE</strong> → <span data-tr="Tarama bitince Liste Sayfası otomatik açılır. Kullanıcıları filtrele, hariç tut, seç." data-en="When scan completes, the List Page opens automatically. Filter, exclude, and select users.">Tarama bitince Liste Sayfası otomatik açılır. Kullanıcıları filtrele, hariç tut, seç.</span><br><br>
+          <strong data-tr="3. UYGULA" data-en="3. APPLY">3. UYGULA</strong> → <span data-tr="Liste sayfasında 'İşlemi Başlat' butonuna bas. Seçili kullanıcılara işlem uygulanır." data-en="Press 'Start Action' on the list page. The action is applied to selected users.">Liste sayfasında 'İşlemi Başlat' butonuna bas. Seçili kullanıcılara işlem uygulanır.</span>
+        </div>
+      </div>
+      <div class="callout info"><span class="callout-icon">ℹ️</span><span data-tr="Tarama sırasında Instagram sekmesini kapatma. Eklenti o sekme üzerinden çalışır." data-en="Don't close the Instagram tab during scanning. The extension works through that tab.">Tarama sırasında Instagram sekmesini kapatma. Eklenti o sekme üzerinden çalışır.</span></div>
+    </section>
+
+    <hr>
+
+    <!-- 3. POPUP -->
+    <section class="guide-section" id="popup">
+      <div class="section-header"><span class="section-num">3</span><h2 class="section-title" data-tr="Popup Arayüzü" data-en="Popup Interface">Popup Arayüzü</h2></div>
+      <p class="section-desc" data-tr="Eklenti ikonuna tıklayınca açılan popup, tüm kontrollerin merkezi." data-en="The popup that opens when you click the extension icon is the control center.">Eklenti ikonuna tıklayınca açılan popup, tüm kontrollerin merkezi.</p>
+      <table class="guide-table">
+        <thead><tr><th data-tr="Bölüm" data-en="Section">Bölüm</th><th data-tr="Ne İşe Yarar" data-en="What It Does">Ne İşe Yarar</th></tr></thead>
+        <tbody>
+          <tr><td data-tr="Durum Göstergesi (Hazır / Taranıyor...)" data-en="Status Indicator (Ready / Scanning...)">Durum Göstergesi</td><td data-tr="Eklentinin anlık durumunu gösterir. Yeşil nokta = aktif işlem var." data-en="Shows the current state. Green dot = active operation.">Eklentinin anlık durumunu gösterir. Yeşil nokta = aktif işlem var.</td></tr>
+          <tr><td data-tr="Bulunan / İşlenen sayaçları" data-en="Found / Processed counters">Bulunan / İşlenen</td><td data-tr="Taramada kaç kişi bulundu ve kaçına işlem uygulandı." data-en="How many users were found in scan and how many were processed.">Taramada kaç kişi bulundu, kaçına işlem uygulandı.</td></tr>
+          <tr><td data-tr="Yapılacak İşlem (dropdown)" data-en="Action Type (dropdown)">Yapılacak İşlem</td><td data-tr="8 farklı işlem modu. Seçime göre bilgi kutusu otomatik güncellenir." data-en="8 different action modes. Info box updates automatically based on selection.">8 farklı işlem modu. Seçime göre bilgi kutusu güncellenir.</td></tr>
+          <tr><td data-tr="Hedefleri Tara butonu" data-en="Scan Targets button">Hedefleri Tara</td><td data-tr="Seçili işlem için Instagram'dan kullanıcı listesini çeker." data-en="Fetches the user list from Instagram for the selected action.">Seçili işlem için kullanıcı listesini çeker.</td></tr>
+          <tr><td data-tr="İşlemi Durdur butonu" data-en="Stop Action button">İşlemi Durdur</td><td data-tr="Tarama veya işlem sırasında her an durdurabilirsin." data-en="You can stop at any time during scanning or processing.">Tarama veya işlem sırasında her an durdurabilirsin.</td></tr>
+          <tr><td data-tr="Hash Güncelle butonu" data-en="Update Hash button">Hash Güncelle</td><td data-tr="Instagram API hash'lerini manuel olarak yeniler. Hata alırsan kullan." data-en="Manually refreshes Instagram API hashes. Use when you get errors.">Instagram API hash'lerini manuel yeniler.</td></tr>
+          <tr><td data-tr="Listeyi Gör butonu" data-en="View List button">Listeyi Gör</td><td data-tr="Son tarama sonucunu liste sayfasında açar." data-en="Opens the last scan result in the list page.">Son tarama sonucunu liste sayfasında açar.</td></tr>
+          <tr><td data-tr="Güvenlik & Limit Ayarları" data-en="Security & Limit Settings">Güvenlik & Limit</td><td data-tr="Gecikme süreleri, günlük limit, tarama limitleri. Accordion ile açılır/kapanır." data-en="Delay times, daily limit, scan limits. Opens/closes with accordion.">Gecikme, günlük limit, tarama limitleri.</td></tr>
+          <tr><td data-tr="Gelişmiş Filtreler & Otomasyon" data-en="Advanced Filters & Automation">Gelişmiş Filtreler</td><td data-tr="Gizli profil atla, fotoğrafsız atla, auto-like, auto-story, beyaz/kara liste." data-en="Skip private, skip no-pic, auto-like, auto-story, white/blacklist.">Gizli atla, auto-like, auto-story, listeler.</td></tr>
+          <tr><td data-tr="İşlem Kayıtları (Log)" data-en="Action Logs">İşlem Kayıtları</td><td data-tr="Gerçek zamanlı log paneli. Çöp kutusu ikonu ile temizlenebilir." data-en="Real-time log panel. Can be cleared with the trash icon.">Gerçek zamanlı log paneli.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <hr>
+
+    <!-- 4. TAKİP -->
+    <section class="guide-section" id="takip">
+      <div class="section-header"><span class="section-num">4</span><h2 class="section-title" data-tr="Takip İşlemleri" data-en="Follow Actions">Takip İşlemleri</h2></div>
+      <p class="section-desc" data-tr="Hedef bir profilin takipçilerini veya takip ettiklerini takip etmek için kullanılır. Profil sayfasında olman gerekir." data-en="Used to follow the followers or following of a target profile. You need to be on their profile page.">Hedef bir profilin takipçilerini veya takip ettiklerini takip etmek için kullanılır. Profil sayfasında olman gerekir.</p>
+
+      <div class="card">
+        <div class="card-title">👥 <span data-tr="Bu Kişinin Takipçilerini Takip Et" data-en="Follow This Person's Followers">Bu Kişinin Takipçilerini Takip Et</span></div>
+        <div class="card-body">
+          <span data-tr="<strong>Ne yapar:</strong> Hedef profilin takipçi listesindeki kişileri takip eder.<br><strong>Nasıl kullanılır:</strong><br>1. Instagram'da hedef profilin sayfasına git (örn. instagram.com/nike)<br>2. Popup'tan bu modu seç<br>3. 'Hedefleri Tara' butonuna bas<br>4. Liste sayfasında kullanıcıları incele ve 'İşlemi Başlat'a bas<br><strong>İpucu:</strong> Rakip markaların veya nişindeki büyük hesapların takipçilerini hedefle." data-en="<strong>What it does:</strong> Follows people in the target profile's follower list.<br><strong>How to use:</strong><br>1. Go to the target profile on Instagram (e.g. instagram.com/nike)<br>2. Select this mode from popup<br>3. Press 'Scan Targets'<br>4. Review users on list page and press 'Start Action'<br><strong>Tip:</strong> Target followers of competitor brands or large accounts in your niche."><strong>Ne yapar:</strong> Hedef profilin takipçi listesindeki kişileri takip eder.<br><strong>Nasıl kullanılır:</strong><br>1. Instagram'da hedef profilin sayfasına git (örn. instagram.com/nike)<br>2. Popup'tan bu modu seç<br>3. 'Hedefleri Tara' butonuna bas<br>4. Liste sayfasında kullanıcıları incele ve 'İşlemi Başlat'a bas<br><strong>İpucu:</strong> Rakip markaların veya nişindeki büyük hesapların takipçilerini hedefle.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔗 <span data-tr="Bu Kişinin Takip Ettiklerini Takip Et" data-en="Follow This Person's Following">Bu Kişinin Takip Ettiklerini Takip Et</span></div>
+        <div class="card-body">
+          <span data-tr="<strong>Ne yapar:</strong> Hedef profilin takip ettiği kişileri takip eder.<br><strong>Ne zaman kullanılır:</strong> Hedef kişinin takip ettiği hesaplar senin hedef kitlenle örtüşüyorsa. Örneğin bir influencer'ın takip ettiği markalar veya kişiler.<br><strong>Dikkat:</strong> Takip edilen liste genellikle daha küçük ve seçici olur." data-en="<strong>What it does:</strong> Follows the people that the target profile follows.<br><strong>When to use:</strong> When the accounts the target follows overlap with your target audience. For example, brands or people followed by an influencer.<br><strong>Note:</strong> The following list is usually smaller and more selective."><strong>Ne yapar:</strong> Hedef profilin takip ettiği kişileri takip eder.<br><strong>Ne zaman kullanılır:</strong> Hedef kişinin takip ettiği hesaplar senin hedef kitlenle örtüşüyorsa.<br><strong>Dikkat:</strong> Takip edilen liste genellikle daha küçük ve seçici olur.</span>
+        </div>
+      </div>
+
+      <div class="callout tip"><span class="callout-icon">💡</span><span data-tr="<strong>Pro İpucu:</strong> Takip işlemlerinde 'Gizli Profilleri Atla' ve 'Profil Fotoğrafı Olmayanları Atla' filtrelerini aktif et. Bu sayede gerçek ve aktif hesapları hedeflersin." data-en="<strong>Pro Tip:</strong> Enable 'Skip Private Profiles' and 'Skip No Profile Picture' filters for follow actions. This way you target real and active accounts."><strong>Pro İpucu:</strong> Takip işlemlerinde 'Gizli Profilleri Atla' ve 'Profil Fotoğrafı Olmayanları Atla' filtrelerini aktif et. Bu sayede gerçek ve aktif hesapları hedeflersin.</span></div>
+    </section>
+
+    <hr>
+
+    <!-- 5. UNFOLLOW -->
+    <section class="guide-section" id="unfollow">
+      <div class="section-header"><span class="section-num">5</span><h2 class="section-title" data-tr="Takipten Çıkarma İşlemleri" data-en="Unfollow Actions">Takipten Çıkarma İşlemleri</h2></div>
+      <p class="section-desc" data-tr="4 farklı unfollow modu var. Hangisini ne zaman kullanacağını bilmek önemli." data-en="There are 4 different unfollow modes. Knowing when to use which one is important.">4 farklı unfollow modu var. Hangisini ne zaman kullanacağını bilmek önemli.</p>
+
+      <div class="card">
+        <div class="card-title">📋 <span data-tr="Geri Takip Etmeyenleri Çıkar — Tüm Liste" data-en="Remove Non-Followers — Full List">Geri Takip Etmeyenleri Çıkar — Tüm Liste</span> <span class="tag tag-yellow" data-tr="Yavaş" data-en="Slow">Yavaş</span></div>
+        <div class="card-body"><span data-tr="Şu an takip ettiğin <strong>herkesi</strong> tarar. Takipçi listende olmayanları bulur.<br><strong>Ne zaman kullan:</strong> Hesabını ilk kez temizlerken veya tüm following listeni gözden geçirmek istediğinde.<br><strong>Dikkat:</strong> Çok fazla takip ediyorsan tarama uzun sürebilir. Followers limitini Following limitinden 3-4 kat büyük ayarla." data-en="Scans <strong>everyone</strong> you currently follow. Finds those not in your follower list.<br><strong>When to use:</strong> When cleaning your account for the first time or reviewing your entire following list.<br><strong>Note:</strong> If you follow many people, scanning may take a long time. Set Followers limit 3-4x larger than Following limit.">Şu an takip ettiğin <strong>herkesi</strong> tarar. Takipçi listende olmayanları bulur.<br><strong>Ne zaman kullan:</strong> Hesabını ilk kez temizlerken.<br><strong>Dikkat:</strong> Followers limitini Following limitinden 3-4 kat büyük ayarla.</span></div>
+      </div>
+
+      <div class="card success">
+        <div class="card-title">🕐 <span data-tr="Geri Takip Etmeyenleri Çıkar — Uygulama ile Takip Edilenler" data-en="Remove Non-Followers — App Tracked">Geri Takip Etmeyenleri Çıkar — Uygulama ile Takip Edilenler</span> <span class="tag tag-green" data-tr="Önerilen" data-en="Recommended">Önerilen</span></div>
+        <div class="card-body"><span data-tr="Sadece <strong>InstaGrow ile takip ettiğin</strong> kişileri kontrol eder. Geri takip etmeyenleri listeler.<br><strong>Ne zaman kullan:</strong> Düzenli kullanımda en verimli mod budur. Takip ettiğin kişileri takip eder, geri dönmeyenleri temizlersin.<br><strong>Nasıl çalışır:</strong> Her takip işleminde kişi 'followedByApp' listesine kaydedilir. Bu mod sadece o listeyi kontrol eder.<br><strong>Dikkat:</strong> Takip geçmişi yoksa liste boş gelir. Önce takip işlemi yapman gerekir." data-en="Only checks people <strong>you followed with InstaGrow</strong>. Lists those who didn't follow back.<br><strong>When to use:</strong> This is the most efficient mode for regular use. Follow people, then clean those who don't follow back.<br><strong>How it works:</strong> Each follow action saves the person to 'followedByApp' list. This mode only checks that list.<br><strong>Note:</strong> If there's no follow history, the list will be empty. You need to follow first.">Sadece <strong>InstaGrow ile takip ettiğin</strong> kişileri kontrol eder.<br><strong>Ne zaman kullan:</strong> Düzenli kullanımda en verimli mod budur.<br><strong>Dikkat:</strong> Takip geçmişi yoksa liste boş gelir.</span></div>
+      </div>
+
+      <div class="card warning">
+        <div class="card-title">⚠️ <span data-tr="Geri Takip Edenleri Çıkar" data-en="Remove Followers (Unfollow Back)">Geri Takip Edenleri Çıkar</span></div>
+        <div class="card-body"><span data-tr="Seni takip eden ama senin takip ettiğin kişileri çıkarır. <strong>Takipçi sayın azalır.</strong><br><strong>Ne zaman kullan:</strong> Takip/takipçi oranını düzeltmek istediğinde. Örneğin çok fazla kişiyi takip edip az takipçin varsa." data-en="Removes people who follow you but you also follow. <strong>Your follower count will decrease.</strong><br><strong>When to use:</strong> When you want to fix your follow/follower ratio. For example if you follow too many people with few followers.">Seni takip eden ama senin takip ettiğin kişileri çıkarır. <strong>Takipçi sayın azalır.</strong><br><strong>Ne zaman kullan:</strong> Takip/takipçi oranını düzeltmek istediğinde.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔒 <span data-tr="Hesabı Gizli Olanları Çıkar" data-en="Remove Private Accounts">Hesabı Gizli Olanları Çıkar</span></div>
+        <div class="card-body"><span data-tr="Takip ettiğin private (gizli) hesapları listeler ve çıkarmanı sağlar.<br><strong>Ne zaman kullan:</strong> Gizli hesapların içeriklerini göremiyorsun ve onları takip etmenin bir anlamı yoksa.<br><strong>Hızlı mod:</strong> Followers listesine gerek duymaz, sadece following listesini tarar." data-en="Lists private accounts you follow and lets you remove them.<br><strong>When to use:</strong> When you can't see private accounts' content and following them has no value.<br><strong>Fast mode:</strong> Doesn't need followers list, only scans following list.">Takip ettiğin private hesapları listeler.<br><strong>Hızlı mod:</strong> Sadece following listesini tarar, çok hızlıdır.</span></div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 6. GONDERİ -->
+    <section class="guide-section" id="gonderi">
+      <div class="section-header"><span class="section-num">6</span><h2 class="section-title" data-tr="Gönderi İşlemleri" data-en="Post Actions">Gönderi İşlemleri</h2></div>
+      <p class="section-desc" data-tr="Bir post veya reels'in beğenenlerini ya da yorum yapanlarını takip et. En yüksek kaliteli kitleye ulaşmanın yolu." data-en="Follow likers or commenters of a post or reels. The best way to reach the highest quality audience.">Bir post veya reels'in beğenenlerini ya da yorum yapanlarını takip et. En yüksek kaliteli kitleye ulaşmanın yolu.</p>
+
+      <div class="card highlight">
+        <div class="card-title">❤️ <span data-tr="Gönderiyi Beğenenleri Takip Et" data-en="Follow Post Likers">Gönderiyi Beğenenleri Takip Et</span> <span class="tag tag-purple" data-tr="Yüksek Kalite" data-en="High Quality">Yüksek Kalite</span></div>
+        <div class="card-body"><span data-tr="<strong>Nasıl kullanılır:</strong><br>1. Instagram'da bir gönderi veya reels'e tıkla (URL'de /p/ veya /reel/ olmalı)<br>2. Popup'tan bu modu seç<br>3. 'Hedefleri Tara' butonuna bas<br><strong>Teknik detay:</strong> Önce V1 API ile hızlı çekim yapar (~100 kişi), sonra GraphQL ile tüm listeyi tamamlar. Duplicate'ler otomatik atlanır.<br><strong>İpucu:</strong> Viral olan veya nişinle ilgili popüler gönderilerin beğenenlerini hedefle." data-en="<strong>How to use:</strong><br>1. Click on a post or reels on Instagram (URL must contain /p/ or /reel/)<br>2. Select this mode from popup<br>3. Press 'Scan Targets'<br><strong>Technical detail:</strong> First does a quick fetch with V1 API (~100 people), then completes the full list with GraphQL. Duplicates are automatically skipped.<br><strong>Tip:</strong> Target likers of viral posts or popular content related to your niche."><strong>Nasıl kullanılır:</strong><br>1. Instagram'da bir gönderi veya reels'e tıkla<br>2. Popup'tan bu modu seç → 'Hedefleri Tara'<br><strong>İpucu:</strong> Viral olan veya nişinle ilgili popüler gönderilerin beğenenlerini hedefle.</span></div>
+      </div>
+
+      <div class="card highlight">
+        <div class="card-title">💬 <span data-tr="Gönderiye Yorum Yapanları Takip Et" data-en="Follow Post Commenters">Gönderiye Yorum Yapanları Takip Et</span> <span class="tag tag-purple" data-tr="En Yüksek Kalite" data-en="Highest Quality">En Yüksek Kalite</span></div>
+        <div class="card-body"><span data-tr="<strong>Ne yapar:</strong> Bir gönderiye yorum yapmış kişileri takip eder.<br><strong>Neden değerli:</strong> Yorum yapan kişiler beğenenden çok daha aktif ve etkileşimli. Geri takip oranı genellikle daha yüksek.<br><strong>Nasıl kullanılır:</strong> Gönderi sayfasındayken popup'tan seç ve tara.<br><strong>İpucu:</strong> Soru soran veya tartışma yaratan gönderilerin yorumcularını hedefle." data-en="<strong>What it does:</strong> Follows people who commented on a post.<br><strong>Why it's valuable:</strong> Commenters are much more active and engaged than likers. Follow-back rate is usually higher.<br><strong>How to use:</strong> While on a post page, select from popup and scan.<br><strong>Tip:</strong> Target commenters on posts that ask questions or spark discussion."><strong>Neden değerli:</strong> Yorum yapan kişiler beğenenden çok daha aktif. Geri takip oranı genellikle daha yüksek.<br><strong>İpucu:</strong> Soru soran veya tartışma yaratan gönderilerin yorumcularını hedefle.</span></div>
+      </div>
+
+      <div class="callout warn"><span class="callout-icon">⚠️</span><span data-tr="Gönderi işlemleri için mutlaka gönderi sayfasında olman gerekir. Profil sayfasında çalışmaz." data-en="For post actions, you must be on the post page. It doesn't work on profile pages.">Gönderi işlemleri için mutlaka gönderi sayfasında olman gerekir. Profil sayfasında çalışmaz.</span></div>
+    </section>
+
+    <hr>
+
+    <!-- 7. LİSTE SAYFASI -->
+    <section class="guide-section" id="liste">
+      <div class="section-header"><span class="section-num">7</span><h2 class="section-title" data-tr="Liste Sayfası Kullanımı" data-en="List Page Usage">Liste Sayfası Kullanımı</h2></div>
+      <p class="section-desc" data-tr="Tarama tamamlanınca otomatik açılan bu sayfa, işlemlerin kalbi. Burada her şeyi kontrol edersin." data-en="This page opens automatically when scanning is complete. It's the heart of operations. You control everything here.">Tarama tamamlanınca otomatik açılan bu sayfa, işlemlerin kalbi.</p>
+
+      <div class="card">
+        <div class="card-title">⚖️ <span data-tr="Karşılaştır Görünümü" data-en="Compare View">Karşılaştır Görünümü</span></div>
+        <div class="card-body"><span data-tr="Following ve Followers listelerini yan yana gösterir. <strong>Yeşil işaretli</strong> kişiler seni takip ediyor demektir. Sadece 'Tüm Liste' ve 'Geri Takip Edenleri Çıkar' modlarında anlamlıdır." data-en="Shows Following and Followers lists side by side. <strong>Green marked</strong> people follow you. Only meaningful in 'Full List' and 'Remove Followers' modes.">Following ve Followers listelerini yan yana gösterir. <strong>Yeşil işaretli</strong> = seni takip ediyor.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 <span data-tr="Liste Görünümü — Detaylı Tablo" data-en="List View — Detailed Table">Liste Görünümü — Detaylı Tablo</span></div>
+        <div class="card-body">
+          <span data-tr="<strong>Sütunlar:</strong> Seçim kutusu, sıra no, profil fotoğrafı, kullanıcı adı, ID, hesap türü (gizli/açık), geri takip durumu, takip tarihi (tracked modda), not, hariç tut, kaldır.<br><br><strong>Filtreleme:</strong><br>• Kullanıcı adı arama<br>• Gizli / Açık hesap filtresi<br>• Geri takip ediyor / etmiyor filtresi<br>• Hariç tutulanları göster/gizle<br><br><strong>Sıralama:</strong> Sütun başlıklarına tıklayarak sırala (kullanıcı adı, ID, hesap türü, geri takip)." data-en="<strong>Columns:</strong> Checkbox, row number, profile picture, username, ID, account type (private/public), follow-back status, follow date (tracked mode), note, exclude, remove.<br><br><strong>Filtering:</strong><br>• Username search<br>• Private / Public account filter<br>• Follows back / doesn't follow back filter<br>• Show/hide excluded users<br><br><strong>Sorting:</strong> Click column headers to sort (username, ID, account type, follow-back)."><strong>Sütunlar:</strong> Seçim, profil fotoğrafı, kullanıcı adı, ID, hesap türü, geri takip, not, hariç tut.<br><br><strong>Filtreleme:</strong> Kullanıcı adı arama, gizli/açık filtresi, geri takip filtresi, hariç tutulan filtresi.<br><br><strong>Sıralama:</strong> Sütun başlıklarına tıkla.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎛️ <span data-tr="Topbar Butonları" data-en="Topbar Buttons">Topbar Butonları</span></div>
+        <div class="card-body">
+          <table class="guide-table" style="margin:0;">
+            <thead><tr><th data-tr="Buton" data-en="Button">Buton</th><th data-tr="Ne Yapar" data-en="What It Does">Ne Yapar</th></tr></thead>
+            <tbody>
+              <tr><td data-tr="Tümünü Seç" data-en="Select All">Tümünü Seç</td><td data-tr="Hariç tutulmayanların hepsini seçer" data-en="Selects all non-excluded users">Hariç tutulmayanların hepsini seçer</td></tr>
+              <tr><td data-tr="Seçimi Kaldır" data-en="Deselect All">Seçimi Kaldır</td><td data-tr="Tüm seçimleri kaldırır" data-en="Removes all selections">Tüm seçimleri kaldırır</td></tr>
+              <tr><td data-tr="Seçilenleri Kaldır" data-en="Remove Selected">Seçilenleri Kaldır</td><td data-tr="Seçili kişileri listeden siler (işlem yapmaz)" data-en="Deletes selected people from list (no action taken)">Seçili kişileri listeden siler (işlem yapmaz)</td></tr>
+              <tr><td data-tr="Kaydet" data-en="Save">Kaydet</td><td data-tr="Listeyi storage'a kaydeder" data-en="Saves the list to storage">Listeyi storage'a kaydeder</td></tr>
+              <tr><td data-tr="İşlemi Başlat" data-en="Start Action">İşlemi Başlat</td><td data-tr="Seçili kullanıcılara işlem uygular" data-en="Applies action to selected users">Seçili kullanıcılara işlem uygular</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="callout tip"><span class="callout-icon">💡</span><span data-tr="<strong>Hariç Tut</strong> özelliği ile bazı kişileri işlemden muaf tutabilirsin. Hariç tutulan kişiler listede soluk görünür ve 'İşlemi Başlat'tan etkilenmez." data-en="With the <strong>Exclude</strong> feature you can exempt certain people from the action. Excluded people appear faded in the list and are not affected by 'Start Action'."><strong>Hariç Tut</strong> özelliği ile bazı kişileri işlemden muaf tutabilirsin. Hariç tutulanlar 'İşlemi Başlat'tan etkilenmez.</span></div>
+    </section>
+
+    <hr>
+
+    <!-- 8. EXPORT -->
+    <section class="guide-section" id="export">
+      <div class="section-header"><span class="section-num">8</span><h2 class="section-title" data-tr="Dışa Aktarma" data-en="Export">Dışa Aktarma</h2></div>
+      <p class="section-desc" data-tr="İşlem geçmişini 3 farklı formatta indirebilirsin. Tüm butonlar liste sayfasının topbar'ında." data-en="You can download action history in 3 different formats. All buttons are in the list page topbar.">İşlem geçmişini 3 farklı formatta indirebilirsin.</p>
+      <table class="guide-table">
+        <thead><tr><th data-tr="Format" data-en="Format">Format</th><th data-tr="İçerik" data-en="Content">İçerik</th><th data-tr="Ne Zaman Kullan" data-en="When to Use">Ne Zaman Kullan</th></tr></thead>
+        <tbody>
+          <tr><td>CSV</td><td data-tr="Tarih, İşlem, Kullanıcı Adı, ID, Durum" data-en="Date, Action, Username, ID, Status">Tarih, İşlem, Kullanıcı Adı, ID, Durum</td><td data-tr="Excel veya Google Sheets'te analiz için" data-en="For analysis in Excel or Google Sheets">Excel / Google Sheets analizi</td></tr>
+          <tr><td>TXT</td><td data-tr="Aynı veriler düz metin formatında" data-en="Same data in plain text format">Aynı veriler düz metin</td><td data-tr="Basit okuma veya paylaşım için" data-en="For simple reading or sharing">Basit okuma / paylaşım</td></tr>
+          <tr><td>JSON</td><td data-tr="Yapılandırılmış veri, tüm alanlar" data-en="Structured data, all fields">Yapılandırılmış veri, tüm alanlar</td><td data-tr="Programatik işleme veya yedekleme için" data-en="For programmatic processing or backup">Programatik işleme / yedekleme</td></tr>
+        </tbody>
+      </table>
+      <div class="callout info"><span class="callout-icon">ℹ️</span><span data-tr="İşlem geçmişi maksimum <strong>5000 kayıt</strong> saklar. Aşılınca en eski kayıtlar silinir. Düzenli olarak dışa aktar." data-en="Action history stores a maximum of <strong>5000 records</strong>. When exceeded, oldest records are deleted. Export regularly.">İşlem geçmişi maksimum <strong>5000 kayıt</strong> saklar. Düzenli olarak dışa aktar.</span></div>
+    </section>
+
+    <hr>
+
+    <!-- 9. FİLTRELER -->
+    <section class="guide-section" id="filtreler">
+      <div class="section-header"><span class="section-num">9</span><h2 class="section-title" data-tr="Filtreler & Listeler" data-en="Filters & Lists">Filtreler & Listeler</h2></div>
+      <p class="section-desc" data-tr="Popup'taki 'Gelişmiş Filtreler & Otomasyon' bölümünden ayarlanır. Tarama başlamadan önce aktif edilmeli." data-en="Configured from the 'Advanced Filters & Automation' section in popup. Must be enabled before scanning starts.">Popup'taki 'Gelişmiş Filtreler & Otomasyon' bölümünden ayarlanır.</p>
+
+      <div class="card"><div class="card-title">🔒 <span data-tr="Gizli Profilleri Atla" data-en="Skip Private Profiles">Gizli Profilleri Atla</span></div><div class="card-body"><span data-tr="Tarama sırasında private hesapları listeye eklemez. Takip işlemlerinde önerilir çünkü gizli hesaplar takip isteğini onaylamak zorunda." data-en="Doesn't add private accounts to the list during scanning. Recommended for follow actions because private accounts must approve follow requests.">Tarama sırasında private hesapları listeye eklemez. Takip işlemlerinde önerilir.</span></div></div>
+
+      <div class="card"><div class="card-title">🖼️ <span data-tr="Profil Fotoğrafı Olmayanları Atla" data-en="Skip No Profile Picture">Profil Fotoğrafı Olmayanları Atla</span></div><div class="card-body"><span data-tr="Varsayılan avatar kullanan (fotoğrafsız) hesapları atlar. Genellikle bot veya terk edilmiş hesaplardır." data-en="Skips accounts using the default avatar (no photo). These are usually bots or abandoned accounts.">Varsayılan avatar kullanan hesapları atlar. Genellikle bot veya terk edilmiş hesaplardır.</span></div></div>
+
+      <div class="card"><div class="card-title">⚪ <span data-tr="Beyaz Liste (Whitelist)" data-en="Whitelist">Beyaz Liste (Whitelist)</span></div><div class="card-body"><span data-tr="Korunacak kullanıcı adlarını virgülle ayırarak gir. Bu kişiler hiçbir işlemden etkilenmez.<br><strong>Örnek:</strong> <code>kullanici1, kullanici2, arkadasim</code><br><strong>Ne zaman kullan:</strong> Unfollow işlemlerinde arkadaşlarını veya önemli hesapları korumak için." data-en="Enter usernames to protect, separated by commas. These people are not affected by any action.<br><strong>Example:</strong> <code>user1, user2, myfriend</code><br><strong>When to use:</strong> To protect friends or important accounts during unfollow actions.">Korunacak kullanıcı adlarını virgülle ayır.<br><strong>Örnek:</strong> <code>kullanici1, kullanici2</code><br><strong>Ne zaman kullan:</strong> Unfollow işlemlerinde arkadaşlarını korumak için.</span></div></div>
+
+      <div class="card"><div class="card-title">⚫ <span data-tr="Kara Liste (Blacklist)" data-en="Blacklist">Kara Liste (Blacklist)</span></div><div class="card-body"><span data-tr="Etkileşim kurulmayacak kullanıcı adlarını gir. Takip işlemlerinde bu kişiler atlanır.<br><strong>Ne zaman kullan:</strong> Rakip hesapları veya istemediğin kişileri takip etmemek için." data-en="Enter usernames to avoid interacting with. These people are skipped during follow actions.<br><strong>When to use:</strong> To avoid following competitor accounts or unwanted people.">Etkileşim kurulmayacak kullanıcı adlarını gir. Takip işlemlerinde bu kişiler atlanır.</span></div></div>
+    </section>
+
+    <hr>
+
+    <!-- 10. OTOMASYON -->
+    <section class="guide-section" id="otomasyon">
+      <div class="section-header"><span class="section-num">10</span><h2 class="section-title" data-tr="Otomasyon Özellikleri" data-en="Automation Features">Otomasyon Özellikleri</h2></div>
+      <p class="section-desc" data-tr="Sadece takip işlemlerinde çalışır. Etkileşimi artırarak geri takip oranını yükseltir." data-en="Only works with follow actions. Increases engagement to boost follow-back rate.">Sadece takip işlemlerinde çalışır. Etkileşimi artırarak geri takip oranını yükseltir.</p>
+
+      <div class="card highlight"><div class="card-title">❤️ <span data-tr="Otomatik Beğeni (Auto-Like)" data-en="Auto-Like">Otomatik Beğeni (Auto-Like)</span></div><div class="card-body"><span data-tr="Takip etmeden önce hedef kişinin <strong>son 2 gönderisini</strong> otomatik beğenir. Beğeniler arasında 1-2 saniye bekleme vardır.<br><strong>Etkisi:</strong> Kişi bildirim alır, profilini ziyaret eder ve seni takip etme ihtimali artar.<br><strong>Dikkat:</strong> İşlem süresini uzatır. Günlük beğeni limitine dikkat et." data-en="Automatically likes the target person's <strong>last 2 posts</strong> before following. There's a 1-2 second wait between likes.<br><strong>Effect:</strong> The person gets a notification, visits your profile, and is more likely to follow back.<br><strong>Note:</strong> Extends processing time. Watch out for daily like limits.">Takip etmeden önce hedef kişinin <strong>son 2 gönderisini</strong> otomatik beğenir.<br><strong>Etkisi:</strong> Kişi bildirim alır, profilini ziyaret eder, geri takip ihtimali artar.</span></div></div>
+
+      <div class="card highlight"><div class="card-title">📖 <span data-tr="Otomatik Hikaye İzleme (Auto-Story)" data-en="Auto-Story View">Otomatik Hikaye İzleme (Auto-Story)</span></div><div class="card-body"><span data-tr="Takip etmeden önce hedef kişinin hikayesini <strong>görüldü</strong> olarak işaretler.<br><strong>Etkisi:</strong> Hikaye görüntüleyenler listesinde görünürsün. Kişi merak edip profilini ziyaret eder.<br><strong>Dikkat:</strong> Hikayesi olmayan kişilerde bu adım atlanır." data-en="Marks the target person's story as <strong>seen</strong> before following.<br><strong>Effect:</strong> You appear in their story viewers list. The person gets curious and visits your profile.<br><strong>Note:</strong> This step is skipped for people without stories.">Takip etmeden önce hikayeyi <strong>görüldü</strong> olarak işaretler.<br><strong>Etkisi:</strong> Hikaye görüntüleyenler listesinde görünürsün.</span></div></div>
+
+      <div class="callout warn"><span class="callout-icon">⚠️</span><span data-tr="Auto-Like ve Auto-Story aynı anda aktifse her kişi için 3 ayrı API isteği gönderilir. İşlem süresi uzar ve rate limit riski artar. İkisini aynı anda kullanmak yerine birini seç." data-en="If both Auto-Like and Auto-Story are active, 3 separate API requests are sent per person. Processing time increases and rate limit risk rises. Instead of using both at once, choose one.">Auto-Like ve Auto-Story aynı anda aktifse işlem süresi uzar. İkisini aynı anda kullanmak yerine birini seç.</span></div>
+    </section>
+
+    <hr>
+
+    <!-- 11. LİMİTLER -->
+    <section class="guide-section" id="limitler">
+      <div class="section-header"><span class="section-num">11</span><h2 class="section-title" data-tr="Limit & Zamanlama Ayarları" data-en="Limit & Timing Settings">Limit & Zamanlama Ayarları</h2></div>
+      <p class="section-desc" data-tr="Popup'taki 'Güvenlik & Limit Ayarları' bölümünden yapılandırılır. Bu ayarlar hesabının güvenliğini doğrudan etkiler." data-en="Configured from the 'Security & Limit Settings' section in popup. These settings directly affect your account's safety.">Popup'taki 'Güvenlik & Limit Ayarları' bölümünden yapılandırılır.</p>
+
+      <table class="guide-table">
+        <thead><tr><th data-tr="Ayar" data-en="Setting">Ayar</th><th data-tr="Varsayılan" data-en="Default">Varsayılan</th><th data-tr="Açıklama" data-en="Description">Açıklama</th></tr></thead>
+        <tbody>
+          <tr><td data-tr="İşlem Arası Süre (min)" data-en="Action Delay (min)">İşlem Arası (min)</td><td>5 sn</td><td data-tr="İki işlem arasındaki minimum bekleme" data-en="Minimum wait between two actions">İki işlem arasındaki minimum bekleme</td></tr>
+          <tr><td data-tr="İşlem Arası Süre (max)" data-en="Action Delay (max)">İşlem Arası (max)</td><td>10 sn</td><td data-tr="İki işlem arasındaki maksimum bekleme" data-en="Maximum wait between two actions">İki işlem arasındaki maksimum bekleme</td></tr>
+          <tr><td data-tr="Günlük Limit" data-en="Daily Limit">Günlük Limit</td><td>100</td><td data-tr="Günde yapılacak maksimum işlem sayısı" data-en="Maximum number of actions per day">Günde yapılacak maksimum işlem sayısı</td></tr>
+          <tr><td data-tr="Arama Döngüsü Arası" data-en="Search Cycle Delay">Arama Döngüsü Arası</td><td>1500 ms</td><td data-tr="Her sayfa çekimi arasındaki bekleme" data-en="Wait between each page fetch">Her sayfa çekimi arasındaki bekleme</td></tr>
+          <tr><td data-tr="5 Döngü Sonrası Bekleme" data-en="Pause After 5 Cycles">5 Döngü Sonrası</td><td>5000 ms</td><td data-tr="Her 5 tarama döngüsünden sonra uzun mola" data-en="Long pause after every 5 scan cycles">Her 5 tarama döngüsünden sonra uzun mola</td></tr>
+          <tr><td data-tr="Takip Çıkarma Arası" data-en="Unfollow Delay">Takip Çıkarma Arası</td><td>2000 ms</td><td data-tr="Unfollow işlemleri arası bekleme" data-en="Wait between unfollow actions">Unfollow işlemleri arası bekleme</td></tr>
+          <tr><td data-tr="5 Çıkarma Sonrası Bekleme" data-en="Pause After 5 Unfollows">5 Çıkarma Sonrası</td><td>10000 ms</td><td data-tr="Her 5 unfollow'dan sonra uzun mola" data-en="Long pause after every 5 unfollows">Her 5 unfollow'dan sonra uzun mola</td></tr>
+          <tr><td data-tr="Following Tarama Limiti" data-en="Following Scan Limit">Following Limiti</td><td>0 (sınırsız)</td><td data-tr="Takip edilenlerden kaç kişi taransın" data-en="How many people to scan from following">Takip edilenlerden kaç kişi taransın</td></tr>
+          <tr><td data-tr="Followers Tarama Limiti" data-en="Followers Scan Limit">Followers Limiti</td><td>0 (sınırsız)</td><td data-tr="Takipçilerden kaç kişi taransın" data-en="How many people to scan from followers">Takipçilerden kaç kişi taransın</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout danger"><span class="callout-icon">🚨</span><span data-tr="<strong>Kritik:</strong> Followers limitini Following limitinden en az 3-4 kat büyük ayarla. Örneğin Following=500 ise Followers=2000 yap. Aksi halde eşleşme hatalı olur." data-en="<strong>Critical:</strong> Set Followers limit at least 3-4x larger than Following limit. For example if Following=500, set Followers=2000. Otherwise matching will be incorrect."><strong>Kritik:</strong> Followers limitini Following limitinden en az 3-4 kat büyük ayarla. Örn: Following=500 → Followers=2000.</span></div>
+    </section>
+
+    <hr>
+
+    <!-- 12. HASH SİSTEMİ -->
+    <section class="guide-section" id="hash">
+      <div class="section-header"><span class="section-num">12</span><h2 class="section-title" data-tr="Hash Sistemi" data-en="Hash System">Hash Sistemi</h2></div>
+      <p class="section-desc" data-tr="InstaGrow, Instagram'ın GraphQL API'sini kullanır. Bu API'nin çalışması için 'query hash' adı verilen anahtarlar gerekir." data-en="InstaGrow uses Instagram's GraphQL API. This API requires keys called 'query hashes' to work.">InstaGrow, Instagram'ın GraphQL API'sini kullanır. Bu API için 'query hash' anahtarları gerekir.</p>
+
+      <div class="card">
+        <div class="card-title">🔄 <span data-tr="Otomatik Hash Yönetimi" data-en="Automatic Hash Management">Otomatik Hash Yönetimi</span></div>
+        <div class="card-body">
+          <span data-tr="Eklenti yüklendiğinde hash'ler otomatik çekilir ve 24 saat boyunca cache'de saklanır. 24 saat dolunca otomatik yenilenir. Hiçbir şey yapman gerekmez." data-en="When the extension loads, hashes are automatically fetched and cached for 24 hours. They auto-refresh after 24 hours. You don't need to do anything.">Eklenti yüklendiğinde hash'ler otomatik çekilir ve 24 saat cache'de saklanır. Hiçbir şey yapman gerekmez.</span>
+        </div>
+      </div>
+
+      <div class="card warning">
+        <div class="card-title">⚠️ <span data-tr="Hash Güncelle Butonu Ne Zaman Kullanılır?" data-en="When to Use the Update Hash Button?">Hash Güncelle Butonu Ne Zaman Kullanılır?</span></div>
+        <div class="card-body">
+          <span data-tr="Şu durumlarda popup'taki <strong>Hash Güncelle</strong> butonuna bas:<br>• Tarama sırasında 'Instagram API bu veriyi reddetti' hatası alırsan<br>• 'Geçersiz yanıt alındı' hatası görürsen<br>• Instagram büyük bir güncelleme yaptıysa<br><br>Buton, Instagram ana sayfasından yeni hash'leri çeker. Bulunamazsa bilinen fallback hash'ler kullanılır." data-en="Press the <strong>Update Hash</strong> button in popup in these situations:<br>• If you get 'Instagram API rejected this data' error during scanning<br>• If you see 'Invalid response received' error<br>• If Instagram made a major update<br><br>The button fetches new hashes from Instagram's homepage. If not found, known fallback hashes are used.">Şu durumlarda <strong>Hash Güncelle</strong> butonuna bas:<br>• 'Instagram API bu veriyi reddetti' hatası<br>• 'Geçersiz yanıt alındı' hatası<br>• Instagram büyük güncelleme yaptıysa</span>
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 13. TAKİP GEÇMİŞİ -->
+    <section class="guide-section" id="tracked">
+      <div class="section-header"><span class="section-num">13</span><h2 class="section-title" data-tr="Takip Geçmişi (followedByApp)" data-en="Follow History (followedByApp)">Takip Geçmişi (followedByApp)</h2></div>
+      <p class="section-desc" data-tr="InstaGrow ile takip ettiğin her kişi otomatik olarak kaydedilir. Bu kayıt 'Tracked Mod'un temelidir." data-en="Every person you follow with InstaGrow is automatically saved. This record is the foundation of 'Tracked Mode'.">InstaGrow ile takip ettiğin her kişi otomatik kaydedilir. Bu kayıt 'Tracked Mod'un temelidir.</p>
+
+      <div class="card success">
+        <div class="card-title">🕐 <span data-tr="Tracked Mod Döngüsü — Önerilen Kullanım" data-en="Tracked Mode Cycle — Recommended Usage">Tracked Mod Döngüsü — Önerilen Kullanım</span></div>
+        <div class="card-body">
+          <span data-tr="<strong>Hafta 1:</strong> Takip işlemi yap (örn. rakip profilin takipçilerini takip et) → Kişiler followedByApp'e kaydedilir<br><br><strong>Hafta 2-3:</strong> Bekle. Geri takip edecekler eder.<br><br><strong>Hafta 3-4:</strong> 'Geri Takip Etmeyenleri Çıkar (Tracked Mod)' ile tara → Sadece geri takip etmeyenler listelenir → Temizle<br><br><strong>Sonuç:</strong> Takip/takipçi oranın temiz kalır, gerçek takipçiler korunur." data-en="<strong>Week 1:</strong> Do follow action (e.g. follow competitor's followers) → People are saved to followedByApp<br><br><strong>Week 2-3:</strong> Wait. Those who will follow back will do so.<br><br><strong>Week 3-4:</strong> Scan with 'Remove Non-Followers (Tracked Mode)' → Only non-followers are listed → Clean up<br><br><strong>Result:</strong> Your follow/follower ratio stays clean, real followers are preserved."><strong>Hafta 1:</strong> Takip işlemi yap → Kişiler kaydedilir<br><strong>Hafta 2-3:</strong> Bekle, geri takip edecekler eder<br><strong>Hafta 3-4:</strong> Tracked Mod ile tara → Geri takip etmeyenleri temizle<br><strong>Sonuç:</strong> Takip/takipçi oranın temiz kalır</span>
+        </div>
+      </div>
+
+      <div class="callout info"><span class="callout-icon">ℹ️</span><span data-tr="Unfollow yapıldığında kişi followedByApp listesinden otomatik silinir. Liste her zaman güncel kalır." data-en="When you unfollow someone, they are automatically removed from the followedByApp list. The list always stays up to date.">Unfollow yapıldığında kişi followedByApp listesinden otomatik silinir. Liste her zaman güncel kalır.</span></div>
+    </section>
+
+    <hr>
+
+    <!-- 14. STRATEJİ -->
+    <section class="guide-section" id="strateji">
+      <div class="section-header"><span class="section-num">14</span><h2 class="section-title" data-tr="Büyüme Stratejisi" data-en="Growth Strategy">Büyüme Stratejisi</h2></div>
+      <p class="section-desc" data-tr="InstaGrow'u doğru kullanmak için kanıtlanmış stratejiler." data-en="Proven strategies for using InstaGrow correctly.">InstaGrow'u doğru kullanmak için kanıtlanmış stratejiler.</p>
+
+      <div class="card highlight">
+        <div class="card-title">🎯 <span data-tr="Strateji 1: Niş Hedefleme" data-en="Strategy 1: Niche Targeting">Strateji 1: Niş Hedefleme</span></div>
+        <div class="card-body"><span data-tr="Nişinle ilgili büyük hesapların takipçilerini hedefle. Örneğin fitness hesabıysan büyük fitness influencer'larının takipçilerini takip et. Bu kişiler zaten o içeriklere ilgi duyuyor." data-en="Target followers of large accounts in your niche. For example if you have a fitness account, follow followers of big fitness influencers. These people are already interested in that content.">Nişinle ilgili büyük hesapların takipçilerini hedefle. Bu kişiler zaten o içeriklere ilgi duyuyor.</span></div>
+      </div>
+
+      <div class="card highlight">
+        <div class="card-title">💬 <span data-tr="Strateji 2: Yorum Kitlesi" data-en="Strategy 2: Comment Audience">Strateji 2: Yorum Kitlesi</span></div>
+        <div class="card-body"><span data-tr="Viral olan veya nişinle ilgili popüler gönderilerin yorum yapanlarını takip et. Yorum yapanlar en aktif ve etkileşimli kitledir. Geri takip oranı beğenenlere göre 2-3 kat daha yüksek olabilir." data-en="Follow commenters on viral or popular posts related to your niche. Commenters are the most active and engaged audience. Follow-back rate can be 2-3x higher than likers.">Viral gönderilerin yorum yapanlarını takip et. Geri takip oranı beğenenlere göre 2-3 kat daha yüksek olabilir.</span></div>
+      </div>
+
+      <div class="card highlight">
+        <div class="card-title">🔄 <span data-tr="Strateji 3: Takip-Temizle Döngüsü" data-en="Strategy 3: Follow-Clean Cycle">Strateji 3: Takip-Temizle Döngüsü</span></div>
+        <div class="card-body"><span data-tr="<strong>Günlük:</strong> 50-80 kişi takip et (Tracked Mod ile)<br><strong>3-4 hafta sonra:</strong> Tracked Mod ile geri takip etmeyenleri temizle<br><strong>Sonuç:</strong> Following sayın kontrollü kalır, takipçi/takip oranın iyileşir" data-en="<strong>Daily:</strong> Follow 50-80 people (with Tracked Mode)<br><strong>After 3-4 weeks:</strong> Clean non-followers with Tracked Mode<br><strong>Result:</strong> Your following count stays controlled, follower/following ratio improves"><strong>Günlük:</strong> 50-80 kişi takip et<br><strong>3-4 hafta sonra:</strong> Tracked Mod ile temizle<br><strong>Sonuç:</strong> Oran iyileşir, hesap temiz kalır</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📊 <span data-tr="Önerilen Günlük Limitler" data-en="Recommended Daily Limits">Önerilen Günlük Limitler</span></div>
+        <div class="card-body">
+          <table class="guide-table" style="margin:0;">
+            <thead><tr><th data-tr="Hesap Yaşı" data-en="Account Age">Hesap Yaşı</th><th data-tr="Günlük Takip" data-en="Daily Follow">Günlük Takip</th><th data-tr="Günlük Unfollow" data-en="Daily Unfollow">Günlük Unfollow</th><th data-tr="Gecikme" data-en="Delay">Gecikme</th></tr></thead>
+            <tbody>
+              <tr><td data-tr="Yeni (0-3 ay)" data-en="New (0-3 months)">Yeni (0-3 ay)</td><td>20-30</td><td>10-20</td><td>15-20 sn</td></tr>
+              <tr><td data-tr="Orta (3-12 ay)" data-en="Medium (3-12 months)">Orta (3-12 ay)</td><td>50-80</td><td>30-50</td><td>8-15 sn</td></tr>
+              <tr><td data-tr="Köklü (1+ yıl)" data-en="Established (1+ year)">Köklü (1+ yıl)</td><td>80-100</td><td>50-80</td><td>5-10 sn</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 15. GÜVENLİ KULLANIM -->
+    <section class="guide-section" id="guvenlik">
+      <div class="section-header"><span class="section-num">15</span><h2 class="section-title" data-tr="Güvenli Kullanım" data-en="Safe Usage">Güvenli Kullanım</h2></div>
+      <p class="section-desc" data-tr="Hesabının kısıtlanmaması için bu kurallara uy." data-en="Follow these rules to avoid account restrictions.">Hesabının kısıtlanmaması için bu kurallara uy.</p>
+
+      <div class="card danger">
+        <div class="card-title">🚫 <span data-tr="Kesinlikle Yapma" data-en="Never Do">Kesinlikle Yapma</span></div>
+        <div class="card-body">
+          <span data-tr="• Günlük 200'den fazla takip/unfollow işlemi yapma<br>• Gecikmeyi 3 saniyenin altına indirme<br>• Aynı anda birden fazla tarama başlatma<br>• Tarama sırasında Instagram sekmesini kapatma<br>• Yeni hesaplarda yüksek limitlerle başlama" data-en="• Don't do more than 200 follow/unfollow actions per day<br>• Don't set delay below 3 seconds<br>• Don't start multiple scans at the same time<br>• Don't close the Instagram tab during scanning<br>• Don't start with high limits on new accounts">• Günlük 200'den fazla işlem yapma<br>• Gecikmeyi 3 saniyenin altına indirme<br>• Aynı anda birden fazla tarama başlatma<br>• Tarama sırasında Instagram sekmesini kapatma<br>• Yeni hesaplarda yüksek limitlerle başlama</span>
+        </div>
+      </div>
+
+      <div class="card success">
+        <div class="card-title">✅ <span data-tr="Her Zaman Yap" data-en="Always Do">Her Zaman Yap</span></div>
+        <div class="card-body">
+          <span data-tr="• Beyaz listeye arkadaşlarını ve önemli hesapları ekle<br>• Rate limit hatası alırsan hemen durdur, 1-2 saat bekle<br>• Günlük limiti aşmadan önce işlemi durdur<br>• Düzenli aralıklarla işlem geçmişini dışa aktar<br>• Hesap yaşına göre limit ayarla (yukarıdaki tabloya bak)" data-en="• Add friends and important accounts to whitelist<br>• If you get rate limit error, stop immediately and wait 1-2 hours<br>• Stop the action before reaching daily limit<br>• Export action history at regular intervals<br>• Set limits according to account age (see table above)">• Beyaz listeye arkadaşlarını ekle<br>• Rate limit hatası alırsan hemen durdur, 1-2 saat bekle<br>• Günlük limiti aşmadan önce işlemi durdur<br>• Düzenli aralıklarla işlem geçmişini dışa aktar</span>
+        </div>
+      </div>
+
+      <div class="callout warn"><span class="callout-icon">⚠️</span><span data-tr="Instagram, aynı IP'den çok fazla istek geldiğinde hesabı geçici olarak kısıtlar. Bu olursa eklentiyi kapat, birkaç saat bekle ve tekrar dene." data-en="Instagram temporarily restricts accounts when too many requests come from the same IP. If this happens, close the extension, wait a few hours and try again.">Instagram çok fazla istek geldiğinde hesabı geçici kısıtlar. Bu olursa eklentiyi kapat, birkaç saat bekle.</span></div>
+    </section>
+
+    <hr>
+
+    <!-- 16. SORUN GİDERME -->
+    <section class="guide-section" id="sorun">
+      <div class="section-header"><span class="section-num">16</span><h2 class="section-title" data-tr="Sorun Giderme" data-en="Troubleshooting">Sorun Giderme</h2></div>
+      <p class="section-desc" data-tr="Sık karşılaşılan sorunlar ve çözümleri." data-en="Common issues and their solutions.">Sık karşılaşılan sorunlar ve çözümleri.</p>
+
+      <div class="card"><div class="card-title" data-tr="❌ 'Lütfen önce bir Instagram sayfası açın' hatası" data-en="❌ 'Please open an Instagram page first' error">❌ <span data-tr="'Lütfen önce bir Instagram sayfası açın' hatası" data-en="'Please open an Instagram page first' error">'Lütfen önce bir Instagram sayfası açın' hatası</span></div><div class="card-body"><span data-tr="<strong>Neden:</strong> Aktif sekme Instagram değil.<br><strong>Çözüm:</strong> instagram.com'u aç, sayfanın tamamen yüklenmesini bekle, sonra popup'tan işlemi başlat." data-en="<strong>Why:</strong> Active tab is not Instagram.<br><strong>Solution:</strong> Open instagram.com, wait for the page to fully load, then start the action from popup."><strong>Çözüm:</strong> instagram.com'u aç, sayfanın tamamen yüklenmesini bekle, sonra işlemi başlat.</span></div></div>
+
+      <div class="card"><div class="card-title" data-tr="❌ 'Instagram API bu veriyi reddetti' hatası" data-en="❌ 'Instagram API rejected this data' error">❌ <span data-tr="'Instagram API bu veriyi reddetti' hatası" data-en="'Instagram API rejected this data' error">'Instagram API bu veriyi reddetti' hatası</span></div><div class="card-body"><span data-tr="<strong>Neden:</strong> Query hash'ler güncel değil veya rate limit yendi.<br><strong>Çözüm 1:</strong> Popup'tan 'Hash Güncelle' butonuna bas.<br><strong>Çözüm 2:</strong> Sayfayı yenile (F5), 5 dakika bekle, tekrar dene.<br><strong>Çözüm 3:</strong> Instagram'dan çıkış yap, tekrar giriş yap." data-en="<strong>Why:</strong> Query hashes are outdated or rate limit was hit.<br><strong>Solution 1:</strong> Press 'Update Hash' button in popup.<br><strong>Solution 2:</strong> Refresh the page (F5), wait 5 minutes, try again.<br><strong>Solution 3:</strong> Log out of Instagram and log back in."><strong>Çözüm 1:</strong> 'Hash Güncelle' butonuna bas.<br><strong>Çözüm 2:</strong> Sayfayı yenile (F5), 5 dakika bekle.<br><strong>Çözüm 3:</strong> Instagram'dan çıkış yap, tekrar giriş yap.</span></div></div>
+
+      <div class="card"><div class="card-title" data-tr="❌ Tarama başlıyor ama liste boş geliyor" data-en="❌ Scan starts but list comes back empty">❌ <span data-tr="Tarama başlıyor ama liste boş geliyor" data-en="Scan starts but list comes back empty">Tarama başlıyor ama liste boş geliyor</span></div><div class="card-body"><span data-tr="<strong>Tracked Mod için:</strong> Önce InstaGrow ile takip işlemi yapman gerekir. Takip geçmişi yoksa liste boş gelir.<br><strong>Diğer modlar için:</strong> Tarama limitlerini kontrol et. Following veya Followers limiti çok düşük olabilir. 0 (sınırsız) yap." data-en="<strong>For Tracked Mode:</strong> You need to do a follow action with InstaGrow first. If there's no follow history, the list will be empty.<br><strong>For other modes:</strong> Check scan limits. Following or Followers limit may be too low. Set to 0 (unlimited)."><strong>Tracked Mod:</strong> Önce InstaGrow ile takip işlemi yapman gerekir.<br><strong>Diğer modlar:</strong> Tarama limitlerini 0 (sınırsız) yap.</span></div></div>
+
+      <div class="card"><div class="card-title" data-tr="❌ 'İşlemi Başlat' butonu çalışmıyor" data-en="❌ 'Start Action' button not working">❌ <span data-tr="'İşlemi Başlat' butonu çalışmıyor" data-en="'Start Action' button not working">'İşlemi Başlat' butonu çalışmıyor</span></div><div class="card-body"><span data-tr="<strong>Neden:</strong> Açık bir Instagram sekmesi yok veya hiç kullanıcı seçilmedi.<br><strong>Çözüm:</strong> Instagram.com'un açık olduğundan emin ol. Liste sayfasında en az bir kullanıcı seçili olmalı." data-en="<strong>Why:</strong> No open Instagram tab or no users selected.<br><strong>Solution:</strong> Make sure instagram.com is open. At least one user must be selected on the list page."><strong>Çözüm:</strong> Instagram.com'un açık olduğundan emin ol. En az bir kullanıcı seçili olmalı.</span></div></div>
+
+      <div class="card"><div class="card-title" data-tr="❌ Profil fotoğrafları yüklenmiyor" data-en="❌ Profile pictures not loading">❌ <span data-tr="Profil fotoğrafları yüklenmiyor" data-en="Profile pictures not loading">Profil fotoğrafları yüklenmiyor</span></div><div class="card-body"><span data-tr="<strong>Neden:</strong> Instagram CDN URL'leri zaman aşımına uğramış olabilir.<br><strong>Çözüm:</strong> Sayfayı yenile. Fotoğraflar lazy-load ile yüklenir, biraz bekle." data-en="<strong>Why:</strong> Instagram CDN URLs may have expired.<br><strong>Solution:</strong> Refresh the page. Photos load with lazy-load, wait a moment."><strong>Çözüm:</strong> Sayfayı yenile. Fotoğraflar lazy-load ile yüklenir, biraz bekle.</span></div></div>
+
+      <div class="callout tip"><span class="callout-icon">💡</span><span data-tr="Sorun devam ederse <a href='https://github.com/gkhantyln/instagrow/issues' target='_blank' style='color:var(--success)'>GitHub Issues</a>'dan bug raporu gönder. Log panelindeki hata mesajını da ekle." data-en="If the problem persists, send a bug report from <a href='https://github.com/gkhantyln/instagrow/issues' target='_blank' style='color:var(--success)'>GitHub Issues</a>. Also include the error message from the log panel.">Sorun devam ederse <a href='https://github.com/gkhantyln/instagrow/issues' target='_blank' style='color:var(--success)'>GitHub Issues</a>'dan bug raporu gönder. Log panelindeki hata mesajını da ekle.</span></div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  let currentLang = localStorage.getItem('lang') || 'tr';
+
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️';
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  }
+
+  function toggleLang() {
+    currentLang = currentLang === 'tr' ? 'en' : 'tr';
+    localStorage.setItem('lang', currentLang);
+    applyLang();
+  }
+
+  function applyLang() {
+    document.getElementById('langBtn').textContent = currentLang === 'tr' ? '🌐 EN' : '🌐 TR';
+    document.querySelectorAll('[data-tr]').forEach(el => {
+      const val = el.getAttribute('data-' + currentLang);
+      if (val) el.innerHTML = val;
+    });
+    document.documentElement.lang = currentLang;
+    document.title = currentLang === 'tr' ? 'InstaGrow — Kullanım Kılavuzu' : 'InstaGrow — User Guide';
+  }
+
+  function setActive(el) {
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // Scroll spy
+  const sections = document.querySelectorAll('.guide-section');
+  const links = document.querySelectorAll('.sidebar-link');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) current = s.id; });
+    links.forEach(l => {
+      l.classList.remove('active');
+      if (l.getAttribute('href') === '#' + current) l.classList.add('active');
+    });
+  });
+
+  (function init() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('themeBtn').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+    applyLang();
+  })();
+</script>
+
+<footer>
+  <a class="footer-logo" href="index.html">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="url(#gf)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <defs><linearGradient id="gf" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f09433"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs>
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+    InstaGrow
+  </a>
+  <div class="footer-social">
+    <a class="social-icon" href="https://github.com/gkhantyln" target="_blank" title="GitHub">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+    </a>
+    <a class="social-icon" href="https://www.linkedin.com/in/gkhantyln/" target="_blank" title="LinkedIn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+    </a>
+    <a class="social-icon" href="https://www.instagram.com/ayzvisionstudio/" target="_blank" title="Instagram">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+    </a>
+    <a class="social-icon" href="https://t.me/llcoder" target="_blank" title="Telegram">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </a>
+    <a class="social-icon" href="mailto:tylngkhn@gmail.com" title="Email">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    </a>
+  </div>
+  <div class="footer-links">
+    <a href="index.html" data-tr="Ana Sayfa" data-en="Home">Ana Sayfa</a>
+    <a href="index.html#features" data-tr="Özellikler" data-en="Features">Özellikler</a>
+    <a href="index.html#install" data-tr="Kurulum" data-en="Installation">Kurulum</a>
+    <a href="https://github.com/gkhantyln/instagrow/issues" target="_blank" data-tr="Bug Bildir" data-en="Report Bug">Bug Bildir</a>
+    <a href="https://github.com/gkhantyln/instagrow" target="_blank">GitHub</a>
+  </div>
+  <p data-tr="© 2025 InstaGrow. Gökhan Taylan tarafından yapıldı. Tüm hakları saklıdır." data-en="© 2025 InstaGrow. Made by Gökhan Taylan. All rights reserved.">© 2025 InstaGrow. Gökhan Taylan tarafından yapıldı. Tüm hakları saklıdır.</p>
+</footer>
+
+</body>
+</html>

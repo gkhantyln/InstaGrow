@@ -263,7 +263,10 @@ function processAvatarQueue() {
     avatarLoading++;
     chrome.runtime.sendMessage({ type: 'FETCH_IMAGE', url }, res => {
       avatarLoading--;
-      if (res && res.dataUrl && img.isConnected) img.src = res.dataUrl;
+      if (res && res.dataUrl && img.isConnected) {
+        img.src = res.dataUrl;
+        bindAvatarZoom(img);
+      }
       processAvatarQueue();
     });
   }
@@ -306,28 +309,32 @@ function manualAction(userId, action, btn) {
 const lightbox = document.getElementById('avatarLightbox');
 const lbImg = document.getElementById('lbImg');
 const lbName = document.getElementById('lbName');
+let lbHideTimer = null;
 
-document.addEventListener('mouseover', e => {
-  const img = e.target.closest('img.avatar');
-  if (!img || !img.src || img.src.startsWith('data:image/gif')) return;
-  const row = img.closest('[data-id], tr');
-  let username = '';
-  if (row) {
-    const link = row.querySelector('a');
-    if (link) username = link.textContent.trim();
-  }
-  lbImg.src = img.src;
-  lbName.textContent = username;
-  lightbox.classList.add('open');
-});
+function showLightbox(src, username) {
+  clearTimeout(lbHideTimer);
+  lbImg.src = src;
+  lbName.textContent = username || '';
+  lightbox.style.display = 'flex';
+}
 
-document.addEventListener('mouseout', e => {
-  const img = e.target.closest('img.avatar');
-  if (!img) return;
-  lightbox.classList.remove('open');
-});
+function hideLightbox() {
+  lbHideTimer = setTimeout(() => { lightbox.style.display = 'none'; }, 80);
+}
 
-lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
+lightbox.addEventListener('mouseenter', () => clearTimeout(lbHideTimer));
+lightbox.addEventListener('mouseleave', hideLightbox);
+lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
+
+function bindAvatarZoom(img) {
+  img.addEventListener('mouseenter', () => {
+    if (!img.src || img.src === window.location.href) return;
+    const row = img.closest('[data-id], tr');
+    const link = row ? row.querySelector('a') : null;
+    showLightbox(img.src, link ? link.textContent.trim() : '');
+  });
+  img.addEventListener('mouseleave', hideLightbox);
+}
 
 // ─── VIEW SWITCH ─────────────────────────────────────────────────────────────
 

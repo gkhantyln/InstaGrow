@@ -243,24 +243,18 @@
     .avatar { cursor: zoom-in; }
     #avatarLightbox {
       display: none; position: fixed; inset: 0; z-index: 9999;
-      background: rgba(0,0,0,0.85); align-items: center; justify-content: center;
-      backdrop-filter: blur(6px);
+      background: rgba(0,0,0,0.82); align-items: center; justify-content: center;
+      flex-direction: column; gap: 14px;
+      backdrop-filter: blur(6px); pointer-events: auto;
     }
-    #avatarLightbox.open { display: flex; }
     #avatarLightbox img {
       width: 220px; height: 220px; border-radius: 50%;
       object-fit: cover; border: 3px solid var(--accent);
       box-shadow: 0 0 40px rgba(188,24,136,0.5);
-      animation: zoomIn 0.2s ease;
     }
     #avatarLightbox .lb-name {
-      position: absolute; bottom: calc(50% - 140px);
       color: white; font-size: 15px; font-weight: 600;
       text-shadow: 0 2px 8px rgba(0,0,0,0.8);
-    }
-    @keyframes zoomIn {
-      from { transform: scale(0.6); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
     }
   </style>
 </head>

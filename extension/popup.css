@@ -17,12 +17,18 @@
   padding: 0;
 }
 
+html {
+  /* Chrome eklenti popup'ının izin verdiği maksimum yükseklik 600px'dir */
+  height: 600px;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg-color);
   color: var(--text-main);
   width: 340px;
-  overflow-x: hidden;
+  height: 600px;
+  overflow: hidden;
 }
 
 .container {
@@ -30,6 +36,18 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  height: 100%;
+}
+
+.container main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 -6px;
+  padding: 0 6px;
 }
 
 .header {

@@ -49,6 +49,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const skipNoPic = document.getElementById('skipNoPic');
   const autoLike = document.getElementById('autoLike');
   const autoStory = document.getElementById('autoStory');
+  const storyMaxPerUser = document.getElementById('storyMaxPerUser');
+  const storyLikesPerUser = document.getElementById('storyLikesPerUser');
+  const storyBatchSize = document.getElementById('storyBatchSize');
+  const storyRestMinutes = document.getElementById('storyRestMinutes');
+  const comboStories = document.getElementById('comboStories');
+  const comboLikes = document.getElementById('comboLikes');
 
   const searchCycleDelay = document.getElementById('searchCycleDelay');
   const searchCyclePauseDelay = document.getElementById('searchCyclePauseDelay');
@@ -77,6 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (skipNoPic) skipNoPic.checked = data.settings.skipNoPic || false;
       if (autoLike) autoLike.checked = data.settings.autoLike || false;
       if (autoStory) autoStory.checked = data.settings.autoStory || false;
+      if (storyMaxPerUser) storyMaxPerUser.value = data.settings.storyMaxPerUser || 0;
+      if (storyLikesPerUser) storyLikesPerUser.value = data.settings.storyLikesPerUser || 0;
+      if (storyBatchSize) storyBatchSize.value = data.settings.storyBatchSize || 0;
+      if (storyRestMinutes) storyRestMinutes.value = data.settings.storyRestMinutes || 5;
+      if (comboStories) comboStories.value = data.settings.comboStories !== undefined ? data.settings.comboStories : 10;
+      if (comboLikes) comboLikes.value = data.settings.comboLikes !== undefined ? data.settings.comboLikes : 5;
       if (whitelist) whitelist.value = data.settings.whitelist || '';
       if (blacklist) blacklist.value = data.settings.blacklist || '';
     }
@@ -108,6 +120,12 @@ document.addEventListener('DOMContentLoaded', () => {
         skipNoPic: skipNoPic ? skipNoPic.checked : false,
         autoLike: autoLike ? autoLike.checked : false,
         autoStory: autoStory ? autoStory.checked : false,
+        storyMaxPerUser: parseInt(storyMaxPerUser ? storyMaxPerUser.value : 0, 10),
+        storyLikesPerUser: parseInt(storyLikesPerUser ? storyLikesPerUser.value : 0, 10),
+        storyBatchSize: parseInt(storyBatchSize ? storyBatchSize.value : 0, 10),
+        storyRestMinutes: parseInt(storyRestMinutes ? storyRestMinutes.value : 5, 10),
+        comboStories: parseInt(comboStories ? comboStories.value : 10, 10),
+        comboLikes: parseInt(comboLikes ? comboLikes.value : 5, 10),
         whitelist: whitelist ? whitelist.value : '',
         blacklist: blacklist ? blacklist.value : ''
       }
@@ -174,6 +192,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (skipNoPic) skipNoPic.addEventListener('change', saveSettings);
   if (autoLike) autoLike.addEventListener('change', saveSettings);
   if (autoStory) autoStory.addEventListener('change', saveSettings);
+  if (storyMaxPerUser) storyMaxPerUser.addEventListener('change', saveSettings);
+  if (storyLikesPerUser) storyLikesPerUser.addEventListener('change', saveSettings);
+  if (storyBatchSize) storyBatchSize.addEventListener('change', saveSettings);
+  if (storyRestMinutes) storyRestMinutes.addEventListener('change', saveSettings);
+  if (comboStories) comboStories.addEventListener('change', saveSettings);
+  if (comboLikes) comboLikes.addEventListener('change', saveSettings);
   if (whitelist) whitelist.addEventListener('input', saveSettings);
   if (blacklist) blacklist.addEventListener('input', saveSettings);
 
@@ -256,9 +280,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   stopBtn.addEventListener('click', () => {
     sendCommandToContentScripts('STOP');
-    // İşlem durdurulunca list.html'e yönlendir
+    // İşlem durdurulunca liste doluysa list.html'e yönlendir
+    // (hikaye izleme gibi listesiz işlemlerde boş sayfa açılmasın)
     setTimeout(() => {
-      chrome.tabs.create({ url: chrome.runtime.getURL('list.html') });
+      chrome.storage.local.get(['nonFollowers', 'actionOutputLogs'], (d) => {
+        const hasList = d.nonFollowers && d.nonFollowers.length > 0;
+        const hasHistory = d.actionOutputLogs && d.actionOutputLogs.length > 0;
+        if (hasList || hasHistory) {
+          chrome.tabs.create({ url: chrome.runtime.getURL('list.html') });
+        }
+      });
     }, 500);
   });
 
@@ -267,6 +298,66 @@ document.addEventListener('DOMContentLoaded', () => {
   if (openListBtn) {
     openListBtn.addEventListener('click', () => {
       chrome.tabs.create({ url: chrome.runtime.getURL('list.html') });
+    });
+  }
+
+  // Anasayfa Hikayelerini İzle Butonu
+  const viewStoriesBtn = document.getElementById('viewStoriesBtn');
+  if (viewStoriesBtn) {
+    viewStoriesBtn.addEventListener('click', () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        if (!tabs[0] || !tabs[0].url.includes('instagram.com')) {
+          appendLog('Lütfen önce bir Instagram sayfası açın!', 'error');
+          return;
+        }
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'VIEW_ALL_STORIES' }, (response) => {
+          if (chrome.runtime.lastError || !response || !response.ok) {
+            appendLog('İçerik betiğine ulaşılamadı. Instagram sekmesini yenileyip (F5) tekrar deneyin.', 'error');
+          } else {
+            appendLog('Hikaye izleme başlatıldı. İlerleme burada listelenecek.', 'info');
+          }
+        });
+      });
+    });
+  }
+
+  // Anasayfa Gönderilerini Beğen Butonu
+  const likeFeedBtn = document.getElementById('likeFeedBtn');
+  if (likeFeedBtn) {
+    likeFeedBtn.addEventListener('click', () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        if (!tabs[0] || !tabs[0].url.includes('instagram.com')) {
+          appendLog('Lütfen önce bir Instagram sayfası açın!', 'error');
+          return;
+        }
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'LIKE_FEED_POSTS' }, (response) => {
+          if (chrome.runtime.lastError || !response || !response.ok) {
+            appendLog('İçerik betiğine ulaşılamadı. Instagram sekmesini yenileyip (F5) tekrar deneyin.', 'error');
+          } else {
+            appendLog('Gönderi beğenme başlatıldı. İlerleme burada listelenecek.', 'info');
+          }
+        });
+      });
+    });
+  }
+
+  // Karma Mod Butonu
+  const comboModeBtn = document.getElementById('comboModeBtn');
+  if (comboModeBtn) {
+    comboModeBtn.addEventListener('click', () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        if (!tabs[0] || !tabs[0].url.includes('instagram.com')) {
+          appendLog('Lütfen önce bir Instagram sayfası açın!', 'error');
+          return;
+        }
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'COMBO_MODE' }, (response) => {
+          if (chrome.runtime.lastError || !response || !response.ok) {
+            appendLog('İçerik betiğine ulaşılamadı. Instagram sekmesini yenileyip (F5) tekrar deneyin.', 'error');
+          } else {
+            appendLog('Karma mod başlatıldı. İlerleme burada listelenecek.', 'info');
+          }
+        });
+      });
     });
   }
 

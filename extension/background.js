@@ -2,12 +2,16 @@
 // Currently acts as a relay, but could handle alarms for background processing in the future.
 
 chrome.runtime.onInstalled.addListener(() => {
-    chrome.storage.local.set({
-        appState: { status: 'idle', scanned: 0, unfollowed: 0 },
-        settings: { minDelay: 4, maxDelay: 8, dailyLimit: 100 },
-        logs: []
+    // Sadece eksik olanları başlat — mevcut kullanıcı ayarlarını EZME
+    // (onInstalled her eklenti yenilemesinde de tetiklenir)
+    chrome.storage.local.get(['appState', 'settings', 'logs'], (data) => {
+        const init = {};
+        if (!data.appState) init.appState = { status: 'idle', scanned: 0, unfollowed: 0 };
+        if (!data.settings) init.settings = { minDelay: 4, maxDelay: 8, dailyLimit: 100 };
+        if (!data.logs) init.logs = [];
+        if (Object.keys(init).length > 0) chrome.storage.local.set(init);
     });
-    console.log("InstaCleaner installed and initialized.");
+    console.log("InstaGrow installed and initialized.");
 });
 
 function addLog(msg, logType) {

@@ -158,6 +158,54 @@ function getFiltered() {
   });
 }
 
+// Tarama listesi boşsa işlem geçmişini rapor olarak göster
+function renderHistoryFallback(emptyState) {
+  chrome.storage.local.get(['actionOutputLogs'], (result) => {
+    const logs = result.actionOutputLogs || [];
+    if (logs.length === 0) {
+      emptyState.innerHTML = '<h2>Liste boş</h2><p>Önce popup\'tan bir tarama başlatın.</p>';
+      return;
+    }
+
+    // Özet: işlem türüne göre sayılar
+    const counts = {};
+    logs.forEach(l => { counts[l.action] = (counts[l.action] || 0) + 1; });
+    const summaryHtml = Object.entries(counts)
+      .map(([action, count]) => `<span style="display:inline-block;margin:4px 8px;padding:6px 12px;background:rgba(255,255,255,0.06);border-radius:8px;font-size:13px;">${action}: <strong>${count}</strong></span>`)
+      .join('');
+
+    // Son işlemler en üstte, en fazla 300 satır göster
+    const recent = logs.slice(-300).reverse();
+    const rowsHtml = recent.map((l, i) => `
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+        <td style="padding:6px 10px;color:var(--muted);font-size:12px;text-align:center;">${i + 1}</td>
+        <td style="padding:6px 10px;font-size:13px;">${l.action}</td>
+        <td style="padding:6px 10px;"><a href="https://www.instagram.com/${l.username}/" target="_blank" style="color:#3b82f6;text-decoration:none;font-size:13px;">@${l.username}</a></td>
+        <td style="padding:6px 10px;font-size:12px;">${l.status === 'Başarılı' ? '✅' : '❌'} ${l.status}</td>
+        <td style="padding:6px 10px;color:var(--muted);font-size:12px;white-space:nowrap;">${l.date || '—'}</td>
+      </tr>`).join('');
+
+    emptyState.innerHTML = `
+      <h2 style="margin-bottom:6px;">İşlem Geçmişi Raporu</h2>
+      <p style="margin-bottom:10px;">Tarama listesi boş; aşağıda son işlemler gösteriliyor (toplam ${logs.length} kayıt).</p>
+      <div style="margin-bottom:14px;">${summaryHtml}</div>
+      <div style="max-height:65vh;overflow-y:auto;border:1px solid rgba(255,255,255,0.08);border-radius:10px;">
+        <table style="width:100%;border-collapse:collapse;text-align:left;">
+          <thead>
+            <tr style="position:sticky;top:0;background:#1a1d27;border-bottom:1px solid rgba(255,255,255,0.1);">
+              <th style="padding:8px 10px;font-size:12px;">#</th>
+              <th style="padding:8px 10px;font-size:12px;">İşlem</th>
+              <th style="padding:8px 10px;font-size:12px;">Kullanıcı</th>
+              <th style="padding:8px 10px;font-size:12px;">Durum</th>
+              <th style="padding:8px 10px;font-size:12px;">Tarih</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>`;
+  });
+}
+
 function renderList() {
   const filtered = getFiltered();
   visibleCount.textContent = filtered.length;
@@ -172,6 +220,7 @@ function renderList() {
   if (allUsers.length === 0) {
     emptyState.style.display = 'block';
     userTable.style.display = 'none';
+    renderHistoryFallback(emptyState);
     return;
   }
   emptyState.style.display = 'none';
